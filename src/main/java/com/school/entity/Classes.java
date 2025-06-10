@@ -20,7 +20,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
-public class Class {
+public class Classes {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -37,7 +37,7 @@ public class Class {
     @JoinColumn(name = "class_teacher_id")
     private User classTeacher;
 
-    @OneToMany(mappedBy = "class", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "classes", cascade = CascadeType.ALL)
     private List<Student> students = new ArrayList<>();
 
     @CreatedDate

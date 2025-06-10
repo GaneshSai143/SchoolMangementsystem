@@ -40,6 +40,10 @@ public class Task {
 
     @Column(nullable = false)
     private LocalDateTime dueDate;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "student_id", nullable = false)
+    private Student student;
 
     @CreatedDate
     @Column(nullable = false, updatable = false)

@@ -32,7 +32,7 @@ public class Student {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "class_id", nullable = false)
-    private Class class;
+    private Classes classes;
 
     @OneToMany(mappedBy = "student", cascade = CascadeType.ALL)
     private List<Task> tasks = new ArrayList<>();

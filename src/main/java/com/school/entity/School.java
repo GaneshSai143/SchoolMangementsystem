@@ -37,7 +37,7 @@ public class School {
     private User principal;
 
     @OneToMany(mappedBy = "school", cascade = CascadeType.ALL)
-    private List<Class> classes = new ArrayList<>();
+    private List<Classes> classes = new ArrayList<>();
 
     @CreatedDate
     @Column(nullable = false, updatable = false)
