@@ -2,16 +2,21 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/SchoolManagement
     username: postgres
-    password: postgres 
+    password: postgres
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
     show-sql: true
     properties:
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql
+      data-locations: classpath:data.sql
   security:
     jwt:
       secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
@@ -25,4 +30,4 @@ server:
 logging:
   level:
     org.springframework.security: DEBUG
-    com.school: DEBUG 
+    com.school: DEBUG
