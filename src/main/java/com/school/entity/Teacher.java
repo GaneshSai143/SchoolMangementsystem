@@ -35,7 +35,7 @@ public class Teacher {
     @Column(name = "subject")
     private List<String> subjects = new ArrayList<>();
 
-    @OneToMany(mappedBy = "assignedBy", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "teacher", cascade = CascadeType.ALL)
     private List<Task> assignedTasks = new ArrayList<>();
 
     @CreatedDate

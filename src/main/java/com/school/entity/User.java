@@ -1,10 +1,10 @@
 package com.school.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -14,9 +14,9 @@ import java.time.LocalDateTime;
 @Data
 @Entity
 @Table(name = "users")
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @EntityListeners(AuditingEntityListener.class)
 public class User {
 
@@ -24,32 +24,43 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
-    private String username;
+    @Column(name = "email", nullable = false, unique = true, length = 255)
+    private String email;
 
-    @Column(nullable = false)
+    @Column(name = "password", nullable = false, length = 255)
     private String password;
 
-    @Column(nullable = false)
+    @Column(name = "first_name", nullable = false, length = 255)
+    private String firstName;
+
+    @Column(name = "last_name", nullable = false, length = 255)
+    private String lastName;
+
     @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false, length = 50)
     private UserRole role;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "school_id")
-    private School school;
+    @Column(name = "phone_number", length = 20)
+    private String phoneNumber;
+
+    @Column(name = "enabled", nullable = false)
+    private boolean enabled = true;
+
+    @Column(name = "school_id")
+    private Long schoolId;
 
     @CreatedDate
-    @Column(nullable = false, updatable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @LastModifiedDate
-    @Column(nullable = false)
+    @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    public enum UserRole {
-        SUPER_ADMIN,
-        ADMIN,
-        TEACHER,
-        STUDENT
-    }
-} 
+    @Column(name = "auth_provider", length = 50)
+    private String authProvider;
+
+    @Column(name = "provider_id", length = 255)
+    private String providerId;
+}
+

@@ -15,7 +15,7 @@ import java.util.List;
 
 @Data
 @Entity
-@Table(name = "students")
+@Table(name = "student_profiles")
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
