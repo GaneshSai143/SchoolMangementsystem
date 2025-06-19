@@ -1,5 +1,7 @@
 package com.school.entity;
 
+import com.school.entity.enums.TaskPriority;
+import com.school.entity.enums.TaskStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -60,17 +62,4 @@ public class Task {
     @LastModifiedDate
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
-}
-
-enum TaskStatus {
-    PENDING,
-    IN_PROGRESS,
-    COMPLETED,
-    CANCELLED
-}
-
-enum TaskPriority {
-    LOW,
-    MEDIUM,
-    HIGH
 }

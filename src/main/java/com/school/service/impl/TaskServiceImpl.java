@@ -67,8 +67,8 @@ public class TaskServiceImpl implements TaskService {
                 .title(requestDTO.getTitle())
                 .description(requestDTO.getDescription())
                 .dueDate(requestDTO.getDueDate())
-                .status(modelMapper.map(requestDTO.getStatus(), com.school.entity.TaskStatus.class))
-                .priority(requestDTO.getPriority() != null ? modelMapper.map(requestDTO.getPriority(), com.school.entity.TaskPriority.class) : null)
+                .status(modelMapper.map(requestDTO.getStatus(), com.school.entity.enums.TaskStatus.class))
+                .priority(requestDTO.getPriority() != null ? modelMapper.map(requestDTO.getPriority(), com.school.entity.enums.TaskPriority.class) : null)
                 .student(student) // Can be null if class task
                 .classes(taskClass) // Can be null if student-specific task (though student implies class)
                 .teacher(teacherProfile)
@@ -142,7 +142,7 @@ public class TaskServiceImpl implements TaskService {
              // Student specific logic for status update could go here
              if (requestDTO.getStatus() != null && task.getStudent() != null && task.getStudent().getUser().getId().equals(currentUser.getId())) {
                  // Allow student to update only status
-                 task.setStatus(modelMapper.map(requestDTO.getStatus(), com.school.entity.TaskStatus.class));
+                 task.setStatus(modelMapper.map(requestDTO.getStatus(), com.school.entity.enums.TaskStatus.class));
                  Task updatedTask = taskRepository.save(task);
                  return convertToDTO(updatedTask);
              }
@@ -153,8 +153,8 @@ public class TaskServiceImpl implements TaskService {
         if (requestDTO.getTitle() != null) task.setTitle(requestDTO.getTitle());
         if (requestDTO.getDescription() != null) task.setDescription(requestDTO.getDescription());
         if (requestDTO.getDueDate() != null) task.setDueDate(requestDTO.getDueDate());
-        if (requestDTO.getStatus() != null) task.setStatus(modelMapper.map(requestDTO.getStatus(), com.school.entity.TaskStatus.class));
-        if (requestDTO.getPriority() != null) task.setPriority(modelMapper.map(requestDTO.getPriority(), com.school.entity.TaskPriority.class));
+        if (requestDTO.getStatus() != null) task.setStatus(modelMapper.map(requestDTO.getStatus(), com.school.entity.enums.TaskStatus.class));
+        if (requestDTO.getPriority() != null) task.setPriority(modelMapper.map(requestDTO.getPriority(), com.school.entity.enums.TaskPriority.class));
 
         Task updatedTask = taskRepository.save(task);
         return convertToDTO(updatedTask);
