@@ -85,7 +85,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public User processOAuth2User(String email, String name, String provider) {
+    public UserDTO processOAuth2User(String email, String name, String provider) {
         String[] nameParts = name.split(" ", 2);
         String firstName = nameParts[0];
         String lastName = nameParts.length > 1 ? nameParts[1] : "";
@@ -96,7 +96,7 @@ public class UserServiceImpl implements UserService {
                     user.setFirstName(firstName);
                     user.setLastName(lastName);
                     user.setAuthProvider(provider);
-                    return userRepository.save(user);
+                    return convertToDTO(userRepository.save(user));
                 })
                 .orElseGet(() -> {
                     // Create new user
@@ -108,7 +108,7 @@ public class UserServiceImpl implements UserService {
                             .enabled(true)
                             .authProvider(provider)
                             .build();
-                    return userRepository.save(newUser);
+                    return convertToDTO(userRepository.save(newUser));
                 });
     }
 

@@ -12,7 +12,7 @@ public interface UserService {
     void deleteUser(Long id);
     UserDTO getUserById(Long id);
     UserDTO getUserByEmail(String email);
-    User processOAuth2User(String email, String name, String provider);
+    UserDTO processOAuth2User(String email, String name, String provider);
     UserDTO getCurrentUser();
     void updateUserRole(Long userId, String role);
     void enableUser(Long userId);
