@@ -25,5 +25,6 @@ public class CreateTaskRequestDTO {
     private TaskPriorityDTO priority;
     private Long studentId; // Optional: task can be for a class or specific student
     private Long classId;   // Optional: task can be for a class
+    private Long subjectAssignmentId; // Newly added optional field
     // TeacherId will be inferred from authenticated user (if teacher creates it)
 }

@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
+import com.school.dto.SubjectAssignmentResponseDTO;
 
 @Data
 @Builder
@@ -23,6 +24,7 @@ public class TaskDTO {
     private String teacherName; // Denormalized for convenience
     private Long classId;
     private String className; // Denormalized for convenience
+    private SubjectAssignmentResponseDTO subjectAssignment; // Newly added
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

@@ -88,15 +88,30 @@ public class DashboardServiceImpl implements DashboardService {
     }
 
     private TaskSummaryDTO convertToTaskSummaryDTO(Task task) {
-        TaskSummaryDTO dto = modelMapper.map(task, TaskSummaryDTO.class);
-        if (task.getSubjectAssignment() != null && task.getSubjectAssignment().getSubject() != null) {
+        TaskSummaryDTO dto = new TaskSummaryDTO();
+
+        dto.setId(task.getId());
+        dto.setTitle(task.getTitle());
+        dto.setDueDate(task.getDueDate());
+
+        // Logic for subjectName
+        if (task.getSubjectAssignment() != null &&
+            task.getSubjectAssignment().getSubject() != null &&
+            task.getSubjectAssignment().getSubject().getName() != null) {
             dto.setSubjectName(task.getSubjectAssignment().getSubject().getName());
-        } else if (task.getClasses() != null) {
-             dto.setSubjectName("General (" + task.getClasses().getName() + ")");
+        } else if (task.getClasses() != null) { // Fallback if no specific subject assignment link
+            dto.setSubjectName("Class Task (" + task.getClasses().getName() + ")");
+        } else {
+            dto.setSubjectName("General Task"); // Further fallback
         }
-        if(task.getStatus() != null){
+
+        // Map status enum
+        if (task.getStatus() != null) {
             dto.setStatus(modelMapper.map(task.getStatus(), TaskStatusDTO.class));
+        } else {
+            dto.setStatus(null);
         }
+
         return dto;
     }
 }

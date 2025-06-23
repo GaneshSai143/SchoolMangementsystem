@@ -2,6 +2,7 @@ package com.school.entity;
 
 import com.school.entity.enums.TaskPriority;
 import com.school.entity.enums.TaskStatus;
+import com.school.entity.SubjectAssignment; // New import
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -54,6 +55,10 @@ public class Task {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "class_id", referencedColumnName = "id")
     private Classes classes;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "subject_assignment_id") // Newly added field
+    private SubjectAssignment subjectAssignment;
 
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)

@@ -24,7 +24,8 @@ public class TaskServiceImpl implements TaskService {
     private final TeacherRepository teacherRepository;
     private final ClassRepository classRepository;
     private final UserRepository userRepository; // Kept for now, though currentUser is passed directly
-    private final SubjectAssignmentRepository subjectAssignmentRepository; // Added
+    private final SubjectAssignmentRepository subjectAssignmentRepository;
+    private final SubjectAssignmentServiceImpl subjectAssignmentServiceImpl; // Added for convertToDTO
     private final ModelMapper modelMapper;
 
     // This method might be removed if currentUser is always passed in.
@@ -47,6 +48,12 @@ public class TaskServiceImpl implements TaskService {
             throw new UnauthorizedActionException("Only teachers can create tasks.");
         }
 
+        SubjectAssignment subjectAssignment = null;
+        if (requestDTO.getSubjectAssignmentId() != null) {
+            subjectAssignment = subjectAssignmentRepository.findById(requestDTO.getSubjectAssignmentId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Subject Assignment not found with id: " + requestDTO.getSubjectAssignmentId()));
+        }
+
         Student student = null;
         if (requestDTO.getStudentId() != null) {
             student = studentRepository.findById(requestDTO.getStudentId())
@@ -59,11 +66,29 @@ public class TaskServiceImpl implements TaskService {
                     .orElseThrow(() -> new ResourceNotFoundException("Class not found with id: " + requestDTO.getClassId()));
         }
 
-        if (student == null && taskClass == null) {
-            throw new IllegalArgumentException("Task must be assigned to either a student or a class.");
+        // Validation and context setting:
+        if (subjectAssignment != null) {
+            taskClass = subjectAssignment.getClasses();
+            if (requestDTO.getClassId() != null && !requestDTO.getClassId().equals(taskClass.getId())) {
+                throw new IllegalArgumentException("Provided classId does not match the class in SubjectAssignment.");
+            }
+            if (student != null && !student.getClasses().getId().equals(taskClass.getId())) {
+                throw new IllegalArgumentException("Student does not belong to the class defined in the SubjectAssignment.");
+            }
+            if (teacherProfile != null && !subjectAssignment.getTeacher().getId().equals(teacherProfile.getId())) {
+                 throw new UnauthorizedActionException("Authenticated teacher is not the assigned teacher for the specified Subject Assignment.");
+            }
+        } else { // No SubjectAssignment provided
+            if (student == null && taskClass == null) {
+                throw new IllegalArgumentException("Task must be assigned to either a student, a class, or a subject assignment.");
+            }
+            if (student != null && taskClass != null && !student.getClasses().getId().equals(taskClass.getId())) {
+                 throw new IllegalArgumentException("Student does not belong to the specified class.");
+            }
+            if (student != null && taskClass == null) {
+                taskClass = student.getClasses();
+            }
         }
-
-        // Further validation: if student is specified, ensure student belongs to teacher's school/class (complex)
 
         Task task = Task.builder()
                 .title(requestDTO.getTitle())
@@ -71,9 +96,10 @@ public class TaskServiceImpl implements TaskService {
                 .dueDate(requestDTO.getDueDate())
                 .status(modelMapper.map(requestDTO.getStatus(), com.school.entity.enums.TaskStatus.class))
                 .priority(requestDTO.getPriority() != null ? modelMapper.map(requestDTO.getPriority(), com.school.entity.enums.TaskPriority.class) : null)
-                .student(student) // Can be null if class task
-                .classes(taskClass) // Can be null if student-specific task (though student implies class)
+                .student(student)
+                .classes(taskClass)
                 .teacher(teacherProfile)
+                .subjectAssignment(subjectAssignment)
                 .build();
 
         Task savedTask = taskRepository.save(task);
@@ -299,7 +325,7 @@ public class TaskServiceImpl implements TaskService {
                 taskDTO.setStudentName(task.getStudent().getUser().getFirstName() + " " + task.getStudent().getUser().getLastName());
             }
         }
-        if (task.getTeacher() != null) {
+        if (task.getTeacher() != null) { // This is the creator of the task
             taskDTO.setTeacherId(task.getTeacher().getId());
              if(task.getTeacher().getUser() != null){
                 taskDTO.setTeacherName(task.getTeacher().getUser().getFirstName() + " " + task.getTeacher().getUser().getLastName());
@@ -308,6 +334,11 @@ public class TaskServiceImpl implements TaskService {
         if (task.getClasses() != null) {
             taskDTO.setClassId(task.getClasses().getId());
             taskDTO.setClassName(task.getClasses().getName());
+        }
+        if (task.getSubjectAssignment() != null) {
+            taskDTO.setSubjectAssignment(subjectAssignmentServiceImpl.convertToResponseDTO(task.getSubjectAssignment()));
+        } else {
+            taskDTO.setSubjectAssignment(null);
         }
         // Map enums for status and priority
         if (task.getStatus() != null) {
