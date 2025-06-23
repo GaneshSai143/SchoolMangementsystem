@@ -145,7 +145,7 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
     }
 
-    private UserDTO convertToDTO(User user) {
+    public UserDTO convertToDTO(User user) {
         UserDTO dto = new UserDTO();
         dto.setId(user.getId());
         dto.setEmail(user.getEmail());
