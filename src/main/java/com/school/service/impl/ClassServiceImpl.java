@@ -1,13 +1,10 @@
 package com.school.service.impl;
 
 import com.school.dto.*; // UserDTO, StudentDTO needed
-import com.school.entity.Classes;
-import com.school.entity.School;
-import com.school.entity.User;
+import com.school.entity.*;
 import com.school.exception.ResourceNotFoundException;
-import com.school.repository.ClassRepository;
-import com.school.repository.SchoolRepository;
-import com.school.repository.UserRepository;
+import com.school.exception.UnauthorizedActionException;
+import com.school.repository.*;
 import com.school.service.ClassService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -25,11 +22,24 @@ public class ClassServiceImpl implements ClassService {
     private final ClassRepository classRepository;
     private final SchoolRepository schoolRepository;
     private final UserRepository userRepository;
+    private final TeacherRepository teacherRepository; // Added
+    private final SubjectAssignmentRepository subjectAssignmentRepository; // Added
     private final ModelMapper modelMapper;
 
     @Override
     @Transactional
-    public ClassDTO createClass(CreateClassRequestDTO requestDTO) {
+    public ClassDTO createClass(CreateClassRequestDTO requestDTO, User currentUser) {
+        if (currentUser.getRole() == UserRole.ADMIN) { // Principal
+            if (currentUser.getSchoolId() == null) {
+                throw new IllegalArgumentException("Principal (Admin) is not associated with any school.");
+            }
+            if (!currentUser.getSchoolId().equals(requestDTO.getSchoolId())) {
+                throw new UnauthorizedActionException("Principal (Admin) can only create classes for their own school.");
+            }
+        }
+        // SUPER_ADMIN can create for any school, so no check for them here.
+        // For other roles (if any were allowed), they'd need specific checks.
+
         School school = schoolRepository.findById(requestDTO.getSchoolId())
                 .orElseThrow(() -> new ResourceNotFoundException("School not found with id: " + requestDTO.getSchoolId()));
 
@@ -51,27 +61,57 @@ public class ClassServiceImpl implements ClassService {
     }
 
     @Override
-    public ClassDTO getClassById(Long id) {
+    public ClassDTO getClassById(Long id, User currentUser) {
         Classes foundClass = classRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Class not found with id: " + id));
+
+        if (currentUser.getRole() == UserRole.TEACHER) {
+            Teacher teacherProfile = teacherRepository.findByUserId(currentUser.getId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Teacher profile not found for user: " + currentUser.getEmail()));
+            if (!subjectAssignmentRepository.existsByClassesIdAndTeacherIdAndStatus(id, teacherProfile.getId(), "ACTIVE")) {
+                throw new UnauthorizedActionException("Teacher is not actively assigned to this class.");
+            }
+        }
+        // ADMIN/SUPER_ADMIN can view any class subject to PreAuthorize in controller
         return convertToDTO(foundClass);
     }
 
     @Override
-    public List<ClassDTO> getAllClasses() {
-         return classRepository.findAll().stream()
-                        .map(this::convertToDTO)
-                        .collect(Collectors.toList());
+    public List<ClassDTO> getAllClasses(User currentUser) {
+        List<Classes> allClasses = classRepository.findAll();
+        if (currentUser.getRole() == UserRole.TEACHER) {
+            Teacher teacherProfile = teacherRepository.findByUserId(currentUser.getId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Teacher profile not found for user: " + currentUser.getEmail()));
+            List<SubjectAssignment> assignments = subjectAssignmentRepository.findByTeacherIdAndStatus(teacherProfile.getId(), "ACTIVE");
+            List<Long> classIdsTaughtByTeacher = assignments.stream().map(sa -> sa.getClasses().getId()).distinct().collect(Collectors.toList());
+            allClasses = allClasses.stream().filter(cls -> classIdsTaughtByTeacher.contains(cls.getId())).collect(Collectors.toList());
+        }
+        return allClasses.stream().map(this::convertToDTO).collect(Collectors.toList());
     }
 
     @Override
-    public List<ClassDTO> getClassesBySchoolId(Long schoolId) {
+    public List<ClassDTO> getClassesBySchoolId(Long schoolId, User currentUser) {
         if (!schoolRepository.existsById(schoolId)) {
              throw new ResourceNotFoundException("School not found with id: " + schoolId);
         }
-        return classRepository.findBySchoolId(schoolId).stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
+        List<Classes> classesInSchool = classRepository.findBySchoolId(schoolId);
+
+        if (currentUser.getRole() == UserRole.TEACHER) {
+            Teacher teacherProfile = teacherRepository.findByUserId(currentUser.getId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Teacher profile not found for user: " + currentUser.getEmail()));
+            // Further ensure teacher belongs to this school if necessary, though assignments check is primary
+            if(teacherProfile.getUser().getSchoolId() == null || !teacherProfile.getUser().getSchoolId().equals(schoolId)){
+                 throw new UnauthorizedActionException("Teacher does not belong to this school.");
+            }
+            List<SubjectAssignment> assignments = subjectAssignmentRepository.findByTeacherIdAndStatus(teacherProfile.getId(), "ACTIVE");
+            List<Long> classIdsTaughtByTeacher = assignments.stream()
+                                                    .filter(sa -> sa.getClasses().getSchool().getId().equals(schoolId)) // ensure class is in the requested school
+                                                    .map(sa -> sa.getClasses().getId())
+                                                    .distinct()
+                                                    .collect(Collectors.toList());
+            classesInSchool = classesInSchool.stream().filter(cls -> classIdsTaughtByTeacher.contains(cls.getId())).collect(Collectors.toList());
+        }
+        return classesInSchool.stream().map(this::convertToDTO).collect(Collectors.toList());
     }
 
     @Override

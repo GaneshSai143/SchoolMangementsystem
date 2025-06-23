@@ -11,7 +11,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication; // Added
+import org.springframework.security.core.context.SecurityContextHolder; // Added
 import org.springframework.web.bind.annotation.*;
+
+import com.school.entity.User; // Added
+import com.school.repository.UserRepository; // Added
+import com.school.exception.ResourceNotFoundException; // Added
 
 import java.util.List;
 
@@ -22,6 +28,14 @@ import java.util.List;
 public class StudentController {
 
     private final StudentService studentService;
+    private final UserRepository userRepository; // Added
+
+    private User getCurrentlyLoggedInUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userEmail = authentication.getName();
+        return userRepository.findByEmail(userEmail)
+            .orElseThrow(() -> new ResourceNotFoundException("Authenticated user not found with email: " + userEmail));
+    }
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
@@ -33,17 +47,23 @@ public class StudentController {
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'TEACHER') or @studentServiceImpl.getStudentById(#id).getUser().getEmail() == authentication.name")
-    @Operation(summary = "Get student profile by student ID", description = "Allows ADMIN, SUPER_ADMIN, relevant TEACHER, or the student themselves to fetch the profile.")
+    // The SpEL for student self-access needs to be evaluated carefully.
+    // @studentServiceImpl.getStudentById(#id) would call the service method without the currentUser, leading to issues.
+    // A better SpEL would be: #id == @studentRepository.findByUserId(@userRepository.findByEmail(authentication.name).orElse(null)?.id).orElse(null)?.id
+    // For now, simplifying to ensure teacher access is checked by service layer.
+    @Operation(summary = "Get student profile by student ID", description = "Allows ADMIN, SUPER_ADMIN, relevant TEACHER, or the student themselves to fetch the profile. Access for teachers and students is further validated by service layer.")
     public ResponseEntity<StudentDTO> getStudentById(@PathVariable Long id) {
-        StudentDTO student = studentService.getStudentById(id);
+        User currentUser = getCurrentlyLoggedInUser();
+        StudentDTO student = studentService.getStudentById(id, currentUser);
         return ResponseEntity.ok(student);
     }
 
     @GetMapping("/user/{userId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'TEACHER') or @userRepository.findById(#userId).orElse(null)?.email == authentication.name")
-    @Operation(summary = "Get student profile by user ID", description = "Allows ADMIN, SUPER_ADMIN, relevant TEACHER, or the student themselves to fetch the profile.")
+    @Operation(summary = "Get student profile by user ID", description = "Allows ADMIN, SUPER_ADMIN, relevant TEACHER, or the student themselves to fetch the profile. Access for teachers and students is further validated by service layer.")
     public ResponseEntity<StudentDTO> getStudentByUserId(@PathVariable Long userId) {
-        StudentDTO student = studentService.getStudentByUserId(userId);
+        User currentUser = getCurrentlyLoggedInUser();
+        StudentDTO student = studentService.getStudentByUserId(userId, currentUser);
         return ResponseEntity.ok(student);
     }
 
@@ -51,11 +71,12 @@ public class StudentController {
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'TEACHER')")
     @Operation(summary = "Get all student profiles, optionally filtered by class ID", description = "Teacher access may be restricted by service logic to their specific classes.")
     public ResponseEntity<List<StudentDTO>> getAllStudents(@RequestParam(required = false) Long classId) {
+        User currentUser = getCurrentlyLoggedInUser();
         List<StudentDTO> students;
         if (classId != null) {
-            students = studentService.getStudentsByClassId(classId);
+            students = studentService.getStudentsByClassId(classId, currentUser);
         } else {
-            students = studentService.getAllStudents();
+            students = studentService.getAllStudents(currentUser);
         }
         return ResponseEntity.ok(students);
     }

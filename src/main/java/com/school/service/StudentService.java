@@ -3,14 +3,15 @@ package com.school.service;
 import com.school.dto.CreateStudentRequestDTO;
 import com.school.dto.StudentDTO;
 import com.school.dto.UpdateStudentRequestDTO;
+import com.school.entity.User;
 import java.util.List;
 
 public interface StudentService {
-    StudentDTO createStudent(CreateStudentRequestDTO requestDTO);
-    StudentDTO getStudentById(Long id);
-    StudentDTO getStudentByUserId(Long userId);
-    List<StudentDTO> getAllStudents();
-    List<StudentDTO> getStudentsByClassId(Long classId);
-    StudentDTO updateStudent(Long studentId, UpdateStudentRequestDTO requestDTO);
-    void deleteStudent(Long id);
+    StudentDTO createStudent(CreateStudentRequestDTO requestDTO); // Typically by Admin/SuperAdmin
+    StudentDTO getStudentById(Long id, User currentUser);
+    StudentDTO getStudentByUserId(Long userId, User currentUser);
+    List<StudentDTO> getAllStudents(User currentUser); // Might be restricted further
+    List<StudentDTO> getStudentsByClassId(Long classId, User currentUser);
+    StudentDTO updateStudent(Long studentId, UpdateStudentRequestDTO requestDTO); // Typically by Admin/SuperAdmin
+    void deleteStudent(Long id); // Typically by Admin/SuperAdmin
 }

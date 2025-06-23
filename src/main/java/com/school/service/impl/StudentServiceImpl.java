@@ -9,9 +9,8 @@ import com.school.entity.Student;
 import com.school.entity.User;
 import com.school.entity.UserRole;
 import com.school.exception.ResourceNotFoundException;
-import com.school.repository.ClassRepository;
-import com.school.repository.StudentRepository;
-import com.school.repository.UserRepository;
+import com.school.exception.UnauthorizedActionException; // Added
+import com.school.repository.*; // Added Teacher and SubjectAssignment Repos
 import com.school.service.StudentService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -28,6 +27,8 @@ public class StudentServiceImpl implements StudentService {
     private final StudentRepository studentRepository;
     private final UserRepository userRepository;
     private final ClassRepository classRepository;
+    private final TeacherRepository teacherRepository; // Added
+    private final SubjectAssignmentRepository subjectAssignmentRepository; // Added
     private final ModelMapper modelMapper;
 
     @Override
@@ -60,31 +61,77 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
-    public StudentDTO getStudentById(Long id) {
+    public StudentDTO getStudentById(Long id, User currentUser) {
         Student student = studentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Student not found with id: " + id));
+
+        if (currentUser.getRole() == UserRole.TEACHER) {
+            Teacher teacherProfile = teacherRepository.findByUserId(currentUser.getId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Teacher profile not found for user: " + currentUser.getEmail()));
+            if (student.getClasses() == null || !subjectAssignmentRepository.existsByClassesIdAndTeacherIdAndStatus(student.getClasses().getId(), teacherProfile.getId(), "ACTIVE")) {
+                throw new UnauthorizedActionException("Teacher is not actively assigned to this student's class.");
+            }
+        }
+        // STUDENT role check for self-access is handled by PreAuthorize in controller.
+        // ADMIN/SUPER_ADMIN can view.
         return convertToDTO(student);
     }
 
     @Override
-    public StudentDTO getStudentByUserId(Long userId) {
+    public StudentDTO getStudentByUserId(Long userId, User currentUser) {
         Student student = studentRepository.findByUserId(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Student profile not found for user id: " + userId));
+
+        if (currentUser.getRole() == UserRole.TEACHER) {
+            Teacher teacherProfile = teacherRepository.findByUserId(currentUser.getId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Teacher profile not found for user: " + currentUser.getEmail()));
+            if (student.getClasses() == null || !subjectAssignmentRepository.existsByClassesIdAndTeacherIdAndStatus(student.getClasses().getId(), teacherProfile.getId(), "ACTIVE")) {
+                throw new UnauthorizedActionException("Teacher is not actively assigned to this student's class.");
+            }
+        }
+        // STUDENT role check for self-access is handled by PreAuthorize in controller.
+        // ADMIN/SUPER_ADMIN can view.
         return convertToDTO(student);
     }
 
     @Override
-    public List<StudentDTO> getAllStudents() {
+    public List<StudentDTO> getAllStudents(User currentUser) {
+        // This method might be too broad. If teachers access, it should be restricted.
+        // For now, let's assume PreAuthorize handles high-level role access (e.g. only Admin/SuperAdmin)
+        // Finer-grained filtering for teachers (e.g. only students in their classes) would require more complex logic here
+        // or separate dedicated methods.
+        // The current requirement is to allow ADMIN/SUPER_ADMIN/TEACHER. Teacher access implies all students they teach.
+        if (currentUser.getRole() == UserRole.TEACHER) {
+             Teacher teacherProfile = teacherRepository.findByUserId(currentUser.getId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Teacher profile not found for user: " + currentUser.getEmail()));
+            List<SubjectAssignment> assignments = subjectAssignmentRepository.findByTeacherIdAndStatus(teacherProfile.getId(), "ACTIVE");
+            List<Long> classIdsTaughtByTeacher = assignments.stream().map(sa -> sa.getClasses().getId()).distinct().collect(Collectors.toList());
+
+            return studentRepository.findAll().stream()
+                    .filter(student -> student.getClasses() != null && classIdsTaughtByTeacher.contains(student.getClasses().getId()))
+                    .map(this::convertToDTO)
+                    .collect(Collectors.toList());
+        }
+
         return studentRepository.findAll().stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<StudentDTO> getStudentsByClassId(Long classId) {
+    public List<StudentDTO> getStudentsByClassId(Long classId, User currentUser) {
         if (!classRepository.existsById(classId)) {
             throw new ResourceNotFoundException("Class not found with id: " + classId);
         }
+        if (currentUser.getRole() == UserRole.TEACHER) {
+            Teacher teacherProfile = teacherRepository.findByUserId(currentUser.getId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Teacher profile not found for user: " + currentUser.getEmail()));
+            if (!subjectAssignmentRepository.existsByClassesIdAndTeacherIdAndStatus(classId, teacherProfile.getId(), "ACTIVE")) {
+                throw new UnauthorizedActionException("Teacher is not actively assigned to this class.");
+            }
+        }
+        // STUDENT role check for self-access (if they are in this classId) could be added, but usually handled by UI restricting classId choice.
+        // ADMIN/SUPER_ADMIN can view.
         return studentRepository.findByClassesId(classId).stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());

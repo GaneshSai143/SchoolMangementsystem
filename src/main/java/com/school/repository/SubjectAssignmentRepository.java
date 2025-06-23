@@ -13,5 +13,6 @@ public interface SubjectAssignmentRepository extends JpaRepository<SubjectAssign
     List<SubjectAssignment> findBySubjectId(Long subjectId);
     List<SubjectAssignment> findByClassesIdAndStatus(Long classId, String status);
     List<SubjectAssignment> findByTeacherIdAndStatus(Long teacherId, String status);
+    boolean existsByClassesIdAndTeacherIdAndStatus(Long classId, Long teacherId, String status);
     // Add more specific finders as needed, e.g., by teacher, class, and academic term
 }
