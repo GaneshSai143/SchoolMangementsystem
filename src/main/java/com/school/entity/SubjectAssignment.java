@@ -39,13 +39,13 @@ public class SubjectAssignment {
     @JoinColumn(name = "teacher_id", nullable = false)
     private Teacher teacher; // References the Teacher profile entity
 
-    @Column(name = "academic_year", length = 50)
+    @Column(name = "academic_year", length = 50, nullable = false)
     private String academicYear;
 
-    @Column(length = 50)
+    @Column(name = "term", length = 50, nullable = false)
     private String term;
 
-    @Column(length = 50)
+    @Column(name = "status", length = 50, nullable = false)
     @ColumnDefault("'ACTIVE'") // Sets DB default
     private String status = "ACTIVE"; // Sets JPA default
 

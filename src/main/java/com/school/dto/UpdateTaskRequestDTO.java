@@ -6,8 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
-
-@Data
+import com.school.dto.TaskTypeDTO; // New import
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -18,5 +17,6 @@ public class UpdateTaskRequestDTO {
     private LocalDateTime dueDate;
     private TaskStatusDTO status;
     private TaskPriorityDTO priority;
+    private TaskTypeDTO taskType; // Newly added optional field
     // studentId, classId, teacherId generally shouldn't be updated directly on a task
 }

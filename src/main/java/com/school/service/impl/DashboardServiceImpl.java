@@ -112,6 +112,12 @@ public class DashboardServiceImpl implements DashboardService {
             dto.setStatus(null);
         }
 
+        if (task.getTaskType() != null) { // Added mapping for taskType
+            dto.setTaskType(modelMapper.map(task.getTaskType(), TaskTypeDTO.class));
+        } else {
+            dto.setTaskType(null);
+        }
+
         return dto;
     }
 }

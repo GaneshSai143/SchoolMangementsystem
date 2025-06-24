@@ -23,8 +23,10 @@ public class CreateTaskRequestDTO {
     @NotNull(message = "Status cannot be null")
     private TaskStatusDTO status;
     private TaskPriorityDTO priority;
+    @NotNull(message = "Task type cannot be null") // Added validation
+    private TaskTypeDTO taskType; // Added field
     private Long studentId; // Optional: task can be for a class or specific student
     private Long classId;   // Optional: task can be for a class
-    private Long subjectAssignmentId; // Newly added optional field
+    private Long subjectAssignmentId;
     // TeacherId will be inferred from authenticated user (if teacher creates it)
 }

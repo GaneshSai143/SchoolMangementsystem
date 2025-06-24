@@ -104,6 +104,7 @@ public class TaskServiceImpl implements TaskService {
                 .dueDate(requestDTO.getDueDate())
                 .status(modelMapper.map(requestDTO.getStatus(), com.school.entity.enums.TaskStatus.class))
                 .priority(requestDTO.getPriority() != null ? modelMapper.map(requestDTO.getPriority(), com.school.entity.enums.TaskPriority.class) : null)
+                .taskType(requestDTO.getTaskType() != null ? modelMapper.map(requestDTO.getTaskType(), com.school.entity.enums.TaskType.class) : null) // Added
                 .student(student)
                 .classes(determinedClass)
                 .teacher(teacherProfile)
@@ -234,6 +235,9 @@ public class TaskServiceImpl implements TaskService {
             if (requestDTO.getDescription() != null) task.setDescription(requestDTO.getDescription());
             if (requestDTO.getDueDate() != null) task.setDueDate(requestDTO.getDueDate());
             if (requestDTO.getPriority() != null) task.setPriority(modelMapper.map(requestDTO.getPriority(), com.school.entity.enums.TaskPriority.class));
+            if (requestDTO.getTaskType() != null) { // Newly added
+                task.setTaskType(modelMapper.map(requestDTO.getTaskType(), com.school.entity.enums.TaskType.class));
+            }
             // Teacher can change status, unless it's a student-specific status update flow not covered here
             if (requestDTO.getStatus() != null) task.setStatus(modelMapper.map(requestDTO.getStatus(), com.school.entity.enums.TaskStatus.class));
 
@@ -254,6 +258,9 @@ public class TaskServiceImpl implements TaskService {
             if (requestDTO.getDueDate() != null) task.setDueDate(requestDTO.getDueDate());
             if (requestDTO.getStatus() != null) task.setStatus(modelMapper.map(requestDTO.getStatus(), com.school.entity.enums.TaskStatus.class));
             if (requestDTO.getPriority() != null) task.setPriority(modelMapper.map(requestDTO.getPriority(), com.school.entity.enums.TaskPriority.class));
+            if (requestDTO.getTaskType() != null) { // Newly added
+                task.setTaskType(modelMapper.map(requestDTO.getTaskType(), com.school.entity.enums.TaskType.class));
+            }
         } else {
              throw new UnauthorizedActionException("You are not authorized to update this task details.");
         }
@@ -354,6 +361,9 @@ public class TaskServiceImpl implements TaskService {
         }
         if (task.getPriority() != null) {
             taskDTO.setPriority(modelMapper.map(task.getPriority(), TaskPriorityDTO.class));
+        }
+        if (task.getTaskType() != null) { // Added
+            taskDTO.setTaskType(modelMapper.map(task.getTaskType(), TaskTypeDTO.class));
         }
         return taskDTO;
     }

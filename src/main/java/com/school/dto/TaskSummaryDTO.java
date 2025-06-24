@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
+import com.school.dto.TaskTypeDTO; // Added
 
 @Data
 @Builder
@@ -16,4 +17,5 @@ public class TaskSummaryDTO {
     private LocalDateTime dueDate;
     private String subjectName; // From SubjectAssignment -> Subject
     private TaskStatusDTO status;
+    private TaskTypeDTO taskType; // Added field
 }

@@ -24,10 +24,10 @@ public class Subject {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(name = "name", nullable = false, unique = true)
     private String name;
 
-    @Column(name = "subject_code", unique = true) // As per DDL, subject_code is unique
+    @Column(name = "subject_code", unique = true)
     private String subjectCode;
 
     @CreatedDate

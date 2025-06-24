@@ -2,7 +2,8 @@ package com.school.entity;
 
 import com.school.entity.enums.TaskPriority;
 import com.school.entity.enums.TaskStatus;
-import com.school.entity.SubjectAssignment; // New import
+import com.school.entity.enums.TaskType; // Added import
+import com.school.entity.SubjectAssignment;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -57,8 +58,12 @@ public class Task {
     private Classes classes;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "subject_assignment_id") // Newly added field
+    @JoinColumn(name = "subject_assignment_id")
     private SubjectAssignment subjectAssignment;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "task_type", length = 50)
+    private TaskType taskType;
 
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
