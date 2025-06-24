@@ -1,21 +1,20 @@
 package com.school.dto;
 
+import com.school.entity.UserRole;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import java.util.List;
-import com.school.entity.UserRole; // Added
-import jakarta.validation.constraints.NotNull; // Added
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CreateTeacherByAdminRequestDTO {
+public class CreateParentByAdminRequestDTO {
     @NotBlank(message = "First name is required")
     private String firstName;
 
@@ -32,8 +31,6 @@ public class CreateTeacherByAdminRequestDTO {
 
     private String phoneNumber;
 
-    private List<String> subjects; // List of subject names teacher is proficient in
-
     @NotNull(message = "Role is required")
-    private UserRole role;
+    private UserRole role; // Expected to be PARENT
 }

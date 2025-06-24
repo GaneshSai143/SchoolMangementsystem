@@ -60,34 +60,42 @@ public class TaskServiceImpl implements TaskService {
                     .orElseThrow(() -> new ResourceNotFoundException("Student not found with id: " + requestDTO.getStudentId()));
         }
 
-        Classes taskClass = null;
+        Classes requestDtoClass = null; // Class from requestDTO.getClassId()
         if (requestDTO.getClassId() != null) {
-            taskClass = classRepository.findById(requestDTO.getClassId())
+            requestDtoClass = classRepository.findById(requestDTO.getClassId())
                     .orElseThrow(() -> new ResourceNotFoundException("Class not found with id: " + requestDTO.getClassId()));
         }
 
-        // Validation and context setting:
+        Classes determinedClass = null; // Variable to hold the final class for the task
+
         if (subjectAssignment != null) {
-            taskClass = subjectAssignment.getClasses();
-            if (requestDTO.getClassId() != null && !requestDTO.getClassId().equals(taskClass.getId())) {
-                throw new IllegalArgumentException("Provided classId does not match the class in SubjectAssignment.");
+            determinedClass = subjectAssignment.getClasses();
+            if (requestDtoClass != null && !requestDtoClass.getId().equals(determinedClass.getId())) {
+                throw new IllegalArgumentException("Provided classId (" + requestDTO.getClassId() + ") does not match the class in SubjectAssignment (" + determinedClass.getId() + ").");
             }
-            if (student != null && !student.getClasses().getId().equals(taskClass.getId())) {
-                throw new IllegalArgumentException("Student does not belong to the class defined in the SubjectAssignment.");
+            if (student != null && !student.getClasses().getId().equals(determinedClass.getId())) {
+                throw new IllegalArgumentException("Student's class does not match the class in the SubjectAssignment.");
             }
+             // Ensure the assigning teacher is the one in the subject assignment
             if (teacherProfile != null && !subjectAssignment.getTeacher().getId().equals(teacherProfile.getId())) {
                  throw new UnauthorizedActionException("Authenticated teacher is not the assigned teacher for the specified Subject Assignment.");
             }
-        } else { // No SubjectAssignment provided
-            if (student == null && taskClass == null) {
-                throw new IllegalArgumentException("Task must be assigned to either a student, a class, or a subject assignment.");
+        } else if (requestDtoClass != null) { // taskClass from requestDTO.getClassId(), and no SubjectAssignment
+            determinedClass = requestDtoClass;
+            if (student != null && !student.getClasses().getId().equals(determinedClass.getId())) {
+                throw new IllegalArgumentException("Student's class does not match the provided classId.");
             }
-            if (student != null && taskClass != null && !student.getClasses().getId().equals(taskClass.getId())) {
-                 throw new IllegalArgumentException("Student does not belong to the specified class.");
+        } else if (student != null) { // No SubjectAssignment, no requestDTO.classId, but student is present
+            determinedClass = student.getClasses();
+            if (determinedClass == null) {
+                throw new IllegalArgumentException("Student (" + student.getId() + ") is not associated with any class. Task cannot be created without a class context.");
             }
-            if (student != null && taskClass == null) {
-                taskClass = student.getClasses();
-            }
+        } else {
+            throw new IllegalArgumentException("Task cannot be created without a student, class, or subject assignment context.");
+        }
+
+        if (determinedClass == null) {
+            throw new IllegalStateException("Failed to determine class context for the task.");
         }
 
         Task task = Task.builder()
@@ -97,7 +105,7 @@ public class TaskServiceImpl implements TaskService {
                 .status(modelMapper.map(requestDTO.getStatus(), com.school.entity.enums.TaskStatus.class))
                 .priority(requestDTO.getPriority() != null ? modelMapper.map(requestDTO.getPriority(), com.school.entity.enums.TaskPriority.class) : null)
                 .student(student)
-                .classes(taskClass)
+                .classes(determinedClass)
                 .teacher(teacherProfile)
                 .subjectAssignment(subjectAssignment)
                 .build();

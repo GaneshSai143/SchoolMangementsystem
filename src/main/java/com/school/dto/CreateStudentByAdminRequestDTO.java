@@ -8,8 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-@Data
+import com.school.entity.UserRole; // Added
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -32,4 +31,7 @@ public class CreateStudentByAdminRequestDTO {
 
     @NotNull(message = "Class ID is required for the student")
     private Long classId;
+
+    @NotNull(message = "Role is required")
+    private UserRole role;
 }

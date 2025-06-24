@@ -8,8 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-@Data
+import com.school.entity.UserRole; // Added
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -32,4 +31,7 @@ public class CreatePrincipalRequestDTO {
 
     @NotNull(message = "School ID is required for the Principal")
     private Long schoolId;
+
+    @NotNull(message = "Role is required")
+    private UserRole role;
 }

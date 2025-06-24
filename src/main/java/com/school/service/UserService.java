@@ -17,4 +17,5 @@ public interface UserService {
     void updateUserRole(Long userId, String role);
     void enableUser(Long userId);
     void disableUser(Long userId);
+    UserDTO updateUserTheme(String userEmail, String theme);
 } 

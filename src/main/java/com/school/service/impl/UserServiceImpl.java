@@ -156,6 +156,17 @@ public class UserServiceImpl implements UserService {
         dto.setEnabled(user.isEnabled());
         dto.setCreatedAt(user.getCreatedAt());
         dto.setUpdatedAt(user.getUpdatedAt());
+        dto.setPreferredTheme(user.getPreferredTheme()); // Add this line
         return dto;
+    }
+
+    @Override
+    @Transactional
+    public UserDTO updateUserTheme(String userEmail, String theme) {
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userEmail));
+        user.setPreferredTheme(theme);
+        User updatedUser = userRepository.save(user);
+        return convertToDTO(updatedUser);
     }
 } 

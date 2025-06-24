@@ -38,13 +38,17 @@ public class AdminServiceImpl implements AdminService {
         School school = schoolRepository.findById(requestDTO.getSchoolId())
                 .orElseThrow(() -> new ResourceNotFoundException("School not found with id: " + requestDTO.getSchoolId()));
 
+        if (requestDTO.getRole() != UserRole.ADMIN) {
+            throw new IllegalArgumentException("Principals must be created with the ADMIN role.");
+        }
+
         User user = User.builder()
                 .firstName(requestDTO.getFirstName())
                 .lastName(requestDTO.getLastName())
                 .email(requestDTO.getEmail())
                 .password(passwordEncoder.encode(requestDTO.getPassword()))
                 .phoneNumber(requestDTO.getPhoneNumber())
-                .role(UserRole.ADMIN) // Principal is ADMIN
+                .role(requestDTO.getRole()) // Use role from DTO
                 .schoolId(school.getId()) // Link principal to the school
                 .enabled(true)
                 .build();
@@ -61,6 +65,9 @@ public class AdminServiceImpl implements AdminService {
         if (userRepository.existsByEmail(requestDTO.getEmail())) {
             throw new IllegalArgumentException("Email is already in use: " + requestDTO.getEmail());
         }
+        if (requestDTO.getRole() != UserRole.TEACHER) {
+            throw new IllegalArgumentException("Teachers must be created with the TEACHER role by an Admin.");
+        }
 
         User user = User.builder()
                 .firstName(requestDTO.getFirstName())
@@ -68,7 +75,7 @@ public class AdminServiceImpl implements AdminService {
                 .email(requestDTO.getEmail())
                 .password(passwordEncoder.encode(requestDTO.getPassword()))
                 .phoneNumber(requestDTO.getPhoneNumber())
-                .role(UserRole.TEACHER)
+                .role(requestDTO.getRole()) // Use role from DTO
                 .schoolId(loggedInAdmin.getSchoolId()) // Teacher belongs to admin's school
                 .enabled(true)
                 .build();
@@ -96,6 +103,10 @@ public class AdminServiceImpl implements AdminService {
             throw new IllegalArgumentException("Email is already in use: " + requestDTO.getEmail());
         }
 
+        if (requestDTO.getRole() != UserRole.STUDENT) {
+            throw new IllegalArgumentException("Students must be created with the STUDENT role by an Admin.");
+        }
+
         Classes studentClass = classRepository.findById(requestDTO.getClassId())
                 .orElseThrow(() -> new ResourceNotFoundException("Class not found with id: " + requestDTO.getClassId()));
 
@@ -109,7 +120,7 @@ public class AdminServiceImpl implements AdminService {
                 .email(requestDTO.getEmail())
                 .password(passwordEncoder.encode(requestDTO.getPassword()))
                 .phoneNumber(requestDTO.getPhoneNumber())
-                .role(UserRole.STUDENT)
+                .role(requestDTO.getRole()) // Use role from DTO
                 .schoolId(loggedInAdmin.getSchoolId()) // Student belongs to admin's school
                 .enabled(true)
                 .build();
@@ -128,5 +139,32 @@ public class AdminServiceImpl implements AdminService {
             studentDTO.setClassName(savedStudentProfile.getClasses().getName()); // Set class name
         }
         return studentDTO;
+    }
+
+    @Override
+    @Transactional
+    public UserDTO createParentByAdmin(CreateParentByAdminRequestDTO requestDTO, User loggedInAdmin) {
+        if (loggedInAdmin.getSchoolId() == null) {
+            throw new IllegalArgumentException("Admin is not associated with a school.");
+        }
+        if (requestDTO.getRole() != UserRole.PARENT) {
+            throw new IllegalArgumentException("This endpoint is for creating users with the PARENT role.");
+        }
+        if (userRepository.existsByEmail(requestDTO.getEmail())) {
+            throw new IllegalArgumentException("Email is already in use: " + requestDTO.getEmail());
+        }
+
+        User user = User.builder()
+                .firstName(requestDTO.getFirstName())
+                .lastName(requestDTO.getLastName())
+                .email(requestDTO.getEmail())
+                .password(passwordEncoder.encode(requestDTO.getPassword()))
+                .phoneNumber(requestDTO.getPhoneNumber())
+                .role(requestDTO.getRole()) // Should be PARENT
+                .schoolId(loggedInAdmin.getSchoolId()) // Parent associated with Admin's school
+                .enabled(true)
+                .build();
+        User savedUser = userRepository.save(user);
+        return userServiceImpl.convertToDTO(savedUser);
     }
 }

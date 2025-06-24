@@ -62,5 +62,8 @@ public class User {
 
     @Column(name = "provider_id", length = 255)
     private String providerId;
+
+    @Column(name = "preferred_theme", length = 255) // Newly added field
+    private String preferredTheme;
 }
 

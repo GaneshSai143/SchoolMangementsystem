@@ -8,6 +8,14 @@ import com.school.repository.UserRepository;
 import com.school.service.AttendanceService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody as SwaggerRequestBody;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import com.school.dto.ErrorResponseDTO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -39,7 +47,15 @@ public class AttendanceController {
 
     @PostMapping("/record")
     @PreAuthorize("hasRole('TEACHER')")
-    @Operation(summary = "Record attendance for multiple students in a class for a specific date.")
+    @Operation(summary = "Record attendance for multiple students in a class", description = "Requires TEACHER role. Typically, only the designated class teacher can record attendance.")
+    @SwaggerRequestBody(description = "Attendance records for a class on a specific date", required = true, content = @Content(schema = @Schema(implementation = RecordAttendanceRequestDTO.class)))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Attendance recorded successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AttendanceResponseDTO.class))), // List
+            @ApiResponse(responseCode = "400", description = "Bad Request (validation error, student not in class)", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class))),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class))),
+            @ApiResponse(responseCode = "403", description = "Forbidden (e.g., not the class teacher)", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class))),
+            @ApiResponse(responseCode = "404", description = "Class or Student not found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class)))
+    })
     public ResponseEntity<List<AttendanceResponseDTO>> recordAttendance(@Valid @RequestBody RecordAttendanceRequestDTO requestDTO) {
         List<AttendanceResponseDTO> savedRecords = attendanceService.recordAttendance(requestDTO, getCurrentlyLoggedInUser());
         return new ResponseEntity<>(savedRecords, HttpStatus.CREATED);
@@ -47,7 +63,15 @@ public class AttendanceController {
 
     @GetMapping("/student/{studentId}/date/{date}")
     @PreAuthorize("isAuthenticated()")
-    @Operation(summary = "Get attendance for a specific student on a specific date.")
+    @Operation(summary = "Get attendance for a specific student on a specific date", description = "Access controlled by service layer (student, parent, relevant teachers, admin).")
+    @Parameter(name = "studentId", description = "ID of the student profile", required = true, in = ParameterIn.PATH)
+    @Parameter(name = "date", description = "Date of attendance (YYYY-MM-DD)", required = true, in = ParameterIn.PATH, schema = @Schema(type = "string", format = "date"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved attendance record", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AttendanceResponseDTO.class))),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class))),
+            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class))),
+            @ApiResponse(responseCode = "404", description = "Student or Attendance record not found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class)))
+    })
     public ResponseEntity<AttendanceResponseDTO> getAttendanceByStudentAndDate(
             @PathVariable Long studentId,
             @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
@@ -57,7 +81,15 @@ public class AttendanceController {
 
     @GetMapping("/class/{classId}/date/{date}")
     @PreAuthorize("isAuthenticated()")
-    @Operation(summary = "Get attendance for all students in a specific class on a specific date.")
+    @Operation(summary = "Get attendance for all students in a specific class on a specific date", description = "Access controlled by service layer (class teacher, active subject teachers in class, admin).")
+    @Parameter(name = "classId", description = "ID of the class", required = true, in = ParameterIn.PATH)
+    @Parameter(name = "date", description = "Date of attendance (YYYY-MM-DD)", required = true, in = ParameterIn.PATH, schema = @Schema(type = "string", format = "date"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved attendance list", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AttendanceResponseDTO.class))), // List
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class))),
+            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class))),
+            @ApiResponse(responseCode = "404", description = "Class not found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class)))
+    })
     public ResponseEntity<List<AttendanceResponseDTO>> getAttendanceByClassAndDate(
             @PathVariable Long classId,
             @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
@@ -67,7 +99,16 @@ public class AttendanceController {
 
     @GetMapping("/student/{studentId}/period")
     @PreAuthorize("isAuthenticated()")
-    @Operation(summary = "Get attendance for a specific student over a date range.")
+    @Operation(summary = "Get attendance for a specific student over a date range", description = "Access controlled by service layer.")
+    @Parameter(name = "studentId", description = "ID of the student profile", required = true, in = ParameterIn.PATH)
+    @Parameter(name = "startDate", description = "Start date of the period (YYYY-MM-DD)", required = true, in = ParameterIn.QUERY, schema = @Schema(type = "string", format = "date"))
+    @Parameter(name = "endDate", description = "End date of the period (YYYY-MM-DD)", required = true, in = ParameterIn.QUERY, schema = @Schema(type = "string", format = "date"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved attendance list", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AttendanceResponseDTO.class))), // List
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class))),
+            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class))),
+            @ApiResponse(responseCode = "404", description = "Student not found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class)))
+    })
     public ResponseEntity<List<AttendanceResponseDTO>> getAttendanceForStudentForPeriod(
             @PathVariable Long studentId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
