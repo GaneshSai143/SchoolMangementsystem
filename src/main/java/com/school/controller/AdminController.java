@@ -1,12 +1,17 @@
 package com.school.controller;
 
-import com.school.dto.*;
-import com.school.entity.User; // For getting current user details
-import com.school.exception.ResourceNotFoundException; // For getCurrentlyLoggedInUser
-import com.school.repository.UserRepository; // For getCurrentlyLoggedInUser
+import com.school.dto.CreateParentByAdminRequestDTO; // Specific
+import com.school.dto.CreatePrincipalRequestDTO; // Specific
+import com.school.dto.CreateStudentByAdminRequestDTO; // Specific
+import com.school.dto.CreateTeacherByAdminRequestDTO; // Specific
+import com.school.dto.ErrorResponseDTO; // Specific
+import com.school.dto.StudentDTO; // Specific
+import com.school.dto.TeacherDTO; // Specific
+import com.school.dto.UserDTO; // Specific
+import com.school.entity.User;
+import com.school.exception.ResourceNotFoundException;
+import com.school.repository.UserRepository;
 import com.school.service.AdminService;
-// UserService is not directly needed if UserRepository is used for current user.
-// import com.school.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -33,7 +38,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 public class AdminController {
 
     private final AdminService adminService;
-    // private final UserService userService; // Replaced by UserRepository for direct entity access
     private final UserRepository userRepository;
 
 
