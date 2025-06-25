@@ -11,7 +11,10 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody; // Corrected import
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import com.school.dto.ErrorResponseDTO; // Added for error responses
+import com.school.dto.ErrorResponseDTO;
+import com.school.entity.User; // For getCurrentlyLoggedInUserEntity
+import com.school.repository.UserRepository; // For getCurrentlyLoggedInUserEntity
+import com.school.exception.ResourceNotFoundException; // For getCurrentlyLoggedInUserEntity
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -29,6 +32,15 @@ import java.util.Map; // Added
 public class UserController {
 
     private final UserService userService;
+    private final UserRepository userRepository; // Added for helper
+
+    // Helper method to get the full User entity for the logged-in user
+    private User getCurrentlyLoggedInUserEntity() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userEmail = authentication.getName();
+        return userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("Authenticated user not found with email: " + userEmail));
+    }
 
     @GetMapping("/me")
     @Operation(summary = "Get current user details", description = "Retrieves the profile of the currently authenticated user, including preferences like theme.")
@@ -70,7 +82,8 @@ public class UserController {
             @ApiResponse(responseCode = "404", description = "User not found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class)))
     })
     public ResponseEntity<UserDTO> updateUser(@PathVariable Long id, @Valid @RequestBody UserDTO userDTO) {
-        return ResponseEntity.ok(userService.updateUser(id, userDTO));
+        User currentUser = getCurrentlyLoggedInUserEntity();
+        return ResponseEntity.ok(userService.updateUser(id, userDTO, currentUser));
     }
 
     @DeleteMapping("/{id}")
@@ -85,7 +98,8 @@ public class UserController {
             @ApiResponse(responseCode = "404", description = "User not found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class)))
     })
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
-        userService.deleteUser(id);
+        User currentUser = getCurrentlyLoggedInUserEntity();
+        userService.deleteUser(id, currentUser);
         return ResponseEntity.noContent().build();
     }
 
@@ -103,7 +117,8 @@ public class UserController {
             @ApiResponse(responseCode = "404", description = "User not found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class)))
     })
     public ResponseEntity<Void> updateUserRole(@PathVariable Long id, @RequestParam String role) {
-        userService.updateUserRole(id, role);
+        User currentUser = getCurrentlyLoggedInUserEntity();
+        userService.updateUserRole(id, role, currentUser);
         return ResponseEntity.noContent().build();
     }
 
@@ -119,7 +134,8 @@ public class UserController {
             @ApiResponse(responseCode = "404", description = "User not found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class)))
     })
     public ResponseEntity<Void> enableUser(@PathVariable Long id) {
-        userService.enableUser(id);
+        User currentUser = getCurrentlyLoggedInUserEntity();
+        userService.enableUser(id, currentUser);
         return ResponseEntity.noContent().build();
     }
 
@@ -135,7 +151,8 @@ public class UserController {
             @ApiResponse(responseCode = "404", description = "User not found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class)))
     })
     public ResponseEntity<Void> disableUser(@PathVariable Long id) {
-        userService.disableUser(id);
+        User currentUser = getCurrentlyLoggedInUserEntity();
+        userService.disableUser(id, currentUser);
         return ResponseEntity.noContent().build();
     }
 

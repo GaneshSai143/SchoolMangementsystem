@@ -48,8 +48,11 @@ public class ClassController {
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
-    @Operation(summary = "Create a new class", description = "Requires ADMIN or SUPER_ADMIN role. ADMIN (Principal) can only create for their own school.")
-    @SwaggerRequestBody(description = "Details of the class to be created", required = true, content = @Content(schema = @Schema(implementation = CreateClassRequestDTO.class)))
+    @Operation(
+        summary = "Create a new class",
+        description = "Requires ADMIN or SUPER_ADMIN role. ADMIN (Principal) can only create for their own school.",
+        requestBody = @RequestBody(description = "Details of the class to be created", required = true, content = @Content(schema = @Schema(implementation = CreateClassRequestDTO.class)))
+    )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Class created successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ClassDTO.class))),
             @ApiResponse(responseCode = "400", description = "Bad Request", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class))),
