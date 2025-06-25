@@ -12,6 +12,7 @@ import com.school.entity.UserRole; // Added
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Data
 public class CreateStudentByAdminRequestDTO {
     @NotBlank(message = "First name is required")
     private String firstName;

@@ -10,7 +10,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.parameters.RequestBody as SwaggerRequestBody;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import com.school.dto.ErrorResponseDTO;
@@ -34,7 +34,7 @@ public class SchoolController {
     @PostMapping
     @PreAuthorize("hasRole('SUPER_ADMIN')")
     @Operation(summary = "Create a new school", description = "Requires SUPER_ADMIN role.")
-    @SwaggerRequestBody(description = "Details of the school to be created", required = true, content = @Content(schema = @Schema(implementation = CreateSchoolRequestDTO.class)))
+    @RequestBody(description = "Details of the school to be created", required = true, content = @Content(schema = @Schema(implementation = CreateSchoolRequestDTO.class)))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "School created successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = SchoolDTO.class))),
             @ApiResponse(responseCode = "400", description = "Bad Request", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class))),
@@ -79,7 +79,7 @@ public class SchoolController {
     @PreAuthorize("hasRole('SUPER_ADMIN')")
     @Operation(summary = "Update an existing school", description = "Requires SUPER_ADMIN role.")
     @Parameter(name = "id", description = "ID of the school to update", required = true, in = ParameterIn.PATH)
-    @SwaggerRequestBody(description = "Updated school details", required = true, content = @Content(schema = @Schema(implementation = UpdateSchoolRequestDTO.class)))
+    @RequestBody(description = "Updated school details", required = true, content = @Content(schema = @Schema(implementation = UpdateSchoolRequestDTO.class)))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "School updated successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = SchoolDTO.class))),
             @ApiResponse(responseCode = "400", description = "Bad Request", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class))),

@@ -12,7 +12,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.parameters.RequestBody as SwaggerRequestBody;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import com.school.dto.ErrorResponseDTO;
@@ -46,7 +46,7 @@ public class MarkController {
     @PostMapping
     @PreAuthorize("hasRole('TEACHER')")
     @Operation(summary = "Enter marks for a student for a specific subject assignment.", description = "Requires TEACHER role. Teacher must be authorized for the student/subject assignment (e.g., class teacher or assigned subject teacher).")
-    @SwaggerRequestBody(description = "Details of the marks to be entered", required = true, content = @Content(schema = @Schema(implementation = EnterMarkRequestDTO.class)))
+    @RequestBody(description = "Details of the marks to be entered", required = true, content = @Content(schema = @Schema(implementation = EnterMarkRequestDTO.class)))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Marks entered successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = MarkResponseDTO.class))),
             @ApiResponse(responseCode = "400", description = "Bad Request (validation error, student not in class of SA)", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class))),
@@ -63,7 +63,7 @@ public class MarkController {
     @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN', 'SUPER_ADMIN')")
     @Operation(summary = "Update an existing mark record.", description = "Teachers can update marks they recorded or for their class. Admins/SuperAdmins have broader access. Student/SubjectAssignment cannot be changed via this method.")
     @Parameter(name = "markId", description = "ID of the mark record to update", required = true, in = ParameterIn.PATH)
-    @SwaggerRequestBody(description = "Updated mark details", required = true, content = @Content(schema = @Schema(implementation = EnterMarkRequestDTO.class)))
+    @RequestBody(description = "Updated mark details", required = true, content = @Content(schema = @Schema(implementation = EnterMarkRequestDTO.class)))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Mark record updated successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = MarkResponseDTO.class))),
             @ApiResponse(responseCode = "400", description = "Bad Request (validation error, cannot change student/SA)", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class))),

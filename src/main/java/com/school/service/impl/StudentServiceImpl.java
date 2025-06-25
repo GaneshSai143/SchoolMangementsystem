@@ -6,6 +6,8 @@ import com.school.dto.UpdateStudentRequestDTO;
 import com.school.dto.UserDTO; // Required for mapping
 import com.school.entity.Classes;
 import com.school.entity.Student;
+import com.school.entity.SubjectAssignment;
+import com.school.entity.Teacher;
 import com.school.entity.User;
 import com.school.entity.UserRole;
 import com.school.exception.ResourceNotFoundException;
@@ -33,10 +35,7 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     @Transactional
-    public StudentDTO createStudent(CreateStudentRequestDTO requestDTO) {
-        User user = userRepository.findById(requestDTO.getUserId())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + requestDTO.getUserId()));
-
+    public StudentDTO createStudent(CreateStudentRequestDTO requestDTO, User user) {
         // Ensure user has a STUDENT role or set it
         if (user.getRole() != UserRole.STUDENT) {
             // This could be an error, or an automatic role assignment
@@ -139,7 +138,7 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     @Transactional
-    public StudentDTO updateStudent(Long studentId, UpdateStudentRequestDTO requestDTO) {
+    public StudentDTO updateStudent(Long studentId, UpdateStudentRequestDTO requestDTO, User user) {
         Student student = studentRepository.findById(studentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Student not found with id: " + studentId));
 
@@ -156,7 +155,7 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     @Transactional
-    public void deleteStudent(Long id) {
+    public void deleteStudent(Long id, User user) {
         if (!studentRepository.existsById(id)) {
             throw new ResourceNotFoundException("Student not found with id: " + id);
         }

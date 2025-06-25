@@ -12,7 +12,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.parameters.RequestBody as SwaggerRequestBody;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import com.school.dto.ErrorResponseDTO;
@@ -47,7 +47,7 @@ public class FeedbackController {
     @PostMapping
     @PreAuthorize("hasRole('TEACHER')")
     @Operation(summary = "Submit feedback for a student regarding a subject assignment", description = "Only the teacher assigned to the SubjectAssignment can submit feedback. Student must belong to the class of the assignment.")
-    @SwaggerRequestBody(description = "Details of the feedback to be submitted", required = true, content = @Content(schema = @Schema(implementation = CreateFeedbackRequestDTO.class)))
+    @RequestBody(description = "Details of the feedback to be submitted", required = true, content = @Content(schema = @Schema(implementation = CreateFeedbackRequestDTO.class)))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Feedback submitted successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = FeedbackResponseDTO.class))),
             @ApiResponse(responseCode = "400", description = "Bad Request (validation error, student not in class)", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class))),

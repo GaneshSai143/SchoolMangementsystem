@@ -10,6 +10,7 @@ import com.school.dto.TaskTypeDTO; // New import
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Data
 public class UpdateTaskRequestDTO {
     private String title;
     private String description;

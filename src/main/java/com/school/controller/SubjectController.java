@@ -9,7 +9,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.parameters.RequestBody as SwaggerRequestBody;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import com.school.dto.ErrorResponseDTO;
@@ -33,7 +33,7 @@ public class SubjectController {
     @PostMapping
     @PreAuthorize("hasRole('SUPER_ADMIN')")
     @Operation(summary = "Create a new subject", description = "Accessible by SUPER_ADMIN.")
-    @SwaggerRequestBody(description = "Details of the subject to be created", required = true, content = @Content(schema = @Schema(implementation = SubjectRequestDTO.class)))
+    @RequestBody(description = "Details of the subject to be created", required = true, content = @Content(schema = @Schema(implementation = SubjectRequestDTO.class)))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Subject created successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = SubjectResponseDTO.class))),
             @ApiResponse(responseCode = "400", description = "Bad Request (e.g., validation error, subject name/code exists)", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class))),
@@ -89,7 +89,7 @@ public class SubjectController {
     @PreAuthorize("hasRole('SUPER_ADMIN')")
     @Operation(summary = "Update an existing subject", description = "Accessible by SUPER_ADMIN.")
     @Parameter(name = "id", description = "ID of the subject to update", required = true, in = ParameterIn.PATH)
-    @SwaggerRequestBody(description = "Updated subject details", required = true, content = @Content(schema = @Schema(implementation = SubjectRequestDTO.class)))
+    @RequestBody(description = "Updated subject details", required = true, content = @Content(schema = @Schema(implementation = SubjectRequestDTO.class)))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Subject updated successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = SubjectResponseDTO.class))),
             @ApiResponse(responseCode = "400", description = "Bad Request (e.g., validation error, subject name/code exists)", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class))),

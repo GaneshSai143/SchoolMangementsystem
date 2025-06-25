@@ -12,7 +12,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.parameters.RequestBody as SwaggerRequestBody;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import com.school.dto.ErrorResponseDTO;
@@ -48,7 +48,7 @@ public class SubjectAssignmentController {
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     @Operation(summary = "Create a new subject assignment", description = "Links a subject to a class and a teacher for a specific academic year and term. ADMIN can only assign for their school.")
-    @SwaggerRequestBody(description = "Details of the subject assignment", required = true, content = @Content(schema = @Schema(implementation = SubjectAssignmentRequestDTO.class)))
+    @RequestBody(description = "Details of the subject assignment", required = true, content = @Content(schema = @Schema(implementation = SubjectAssignmentRequestDTO.class)))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Assignment created successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = SubjectAssignmentResponseDTO.class))),
             @ApiResponse(responseCode = "400", description = "Bad Request (validation error, or e.g. teacher not in admin's school)", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class))),
@@ -117,7 +117,7 @@ public class SubjectAssignmentController {
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     @Operation(summary = "Update the status of a subject assignment (e.g., ACTIVE, COMPLETED)", description = "ADMIN can only update for assignments in their school.")
     @Parameter(name = "id", description = "ID of the subject assignment to update", required = true, in = ParameterIn.PATH)
-    @SwaggerRequestBody(description = "Payload containing the new status. Example: {\"status\": \"COMPLETED\"}", required = true, content = @Content(mediaType = "application/json", schema = @Schema(type="object", example = "{\"status\": \"COMPLETED\"}")))
+    @RequestBody(description = "Payload containing the new status. Example: {\"status\": \"COMPLETED\"}", required = true, content = @Content(mediaType = "application/json", schema = @Schema(type="object", example = "{\"status\": \"COMPLETED\"}")))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Assignment status updated successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = SubjectAssignmentResponseDTO.class))),
             @ApiResponse(responseCode = "400", description = "Bad Request (e.g. missing status or invalid value)", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class))),
