@@ -12,7 +12,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.parameters.RequestBody as SwaggerRequestBody;
+import io.swagger.v3.oas.annotations.parameters.RequestBody; // Corrected
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import com.school.dto.ErrorResponseDTO;
@@ -47,8 +47,11 @@ public class AttendanceController {
 
     @PostMapping("/record")
     @PreAuthorize("hasRole('TEACHER')")
-    @Operation(summary = "Record attendance for multiple students in a class", description = "Requires TEACHER role. Typically, only the designated class teacher can record attendance.")
-    @SwaggerRequestBody(description = "Attendance records for a class on a specific date", required = true, content = @Content(schema = @Schema(implementation = RecordAttendanceRequestDTO.class)))
+    @Operation(
+        summary = "Record attendance for multiple students in a class",
+        description = "Requires TEACHER role. Typically, only the designated class teacher can record attendance.",
+        requestBody = @RequestBody(description = "Attendance records for a class on a specific date", required = true, content = @Content(schema = @Schema(implementation = RecordAttendanceRequestDTO.class)))
+    )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Attendance recorded successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AttendanceResponseDTO.class))), // List
             @ApiResponse(responseCode = "400", description = "Bad Request (validation error, student not in class)", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class))),
