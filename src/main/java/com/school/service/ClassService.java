@@ -12,7 +12,7 @@ public interface ClassService {
     ClassDTO getClassById(Long id, User currentUser);
     List<ClassDTO> getAllClasses(User currentUser);
     List<ClassDTO> getClassesBySchoolId(Long schoolId, User currentUser);
-    ClassDTO updateClass(Long id, UpdateClassRequestDTO requestDTO); // Assuming only Admin/SuperAdmin, no currentUser needed for auth beyond PreAuthorize
-    void deleteClass(Long id); // Assuming only Admin/SuperAdmin
-    ClassDTO assignClassTeacher(Long classId, Long teacherId);
+    ClassDTO updateClass(Long id, UpdateClassRequestDTO requestDTO, User currentUser);
+    void deleteClass(Long id, User currentUser);
+    ClassDTO assignClassTeacher(Long classId, Long teacherId, User currentUser);
 }

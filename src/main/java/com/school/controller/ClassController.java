@@ -10,7 +10,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.parameters.RequestBody as SwaggerRequestBody;
+import io.swagger.v3.oas.annotations.parameters.RequestBody; // Corrected
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import com.school.dto.ErrorResponseDTO;
@@ -102,9 +102,12 @@ public class ClassController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
-    @Operation(summary = "Update an existing class", description = "Requires ADMIN or SUPER_ADMIN role. ADMIN (Principal) can only update classes in their own school (validated in service).")
+    @Operation(
+        summary = "Update an existing class",
+        description = "Requires ADMIN or SUPER_ADMIN role. ADMIN (Principal) can only update classes in their own school (validated in service).",
+        requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Updated class details", required = true, content = @Content(schema = @Schema(implementation = UpdateClassRequestDTO.class)))
+    )
     @Parameter(name = "id", description = "ID of the class to update", required = true, in = ParameterIn.PATH)
-    @SwaggerRequestBody(description = "Updated class details", required = true, content = @Content(schema = @Schema(implementation = UpdateClassRequestDTO.class)))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Class updated successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ClassDTO.class))),
             @ApiResponse(responseCode = "400", description = "Bad Request", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class))),
@@ -112,17 +115,20 @@ public class ClassController {
             @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class))),
             @ApiResponse(responseCode = "404", description = "Class or Teacher not found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class)))
     })
-    public ResponseEntity<ClassDTO> updateClass(@PathVariable Long id, @Valid @RequestBody UpdateClassRequestDTO requestDTO) {
-        // Assuming updateClass in service handles authorization for ADMIN to their school
-        ClassDTO updatedClass = classService.updateClass(id, requestDTO);
+    public ResponseEntity<ClassDTO> updateClass(@PathVariable Long id, @Valid @org.springframework.web.bind.annotation.RequestBody UpdateClassRequestDTO requestDTO) {
+        User currentUser = getCurrentlyLoggedInUser();
+        ClassDTO updatedClass = classService.updateClass(id, requestDTO, currentUser);
         return ResponseEntity.ok(updatedClass);
     }
 
     @PatchMapping("/{classId}/assign-teacher")
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
-    @Operation(summary = "Assign a teacher to a class", description = "Requires ADMIN or SUPER_ADMIN role. ADMIN (Principal) can only assign for classes/teachers in their own school (validated in service).")
+    @Operation(
+        summary = "Assign a teacher to a class",
+        description = "Requires ADMIN or SUPER_ADMIN role. ADMIN (Principal) can only assign for classes/teachers in their own school (validated in service).",
+        requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Payload containing teacherId. Example: {\"teacherId\": 123}", required = true, content = @Content(mediaType = "application/json", schema = @Schema(type="object", example = "{\"teacherId\": 123}")))
+    )
     @Parameter(name = "classId", description = "ID of the class to assign a teacher to", required = true, in = ParameterIn.PATH)
-    @SwaggerRequestBody(description = "Payload containing teacherId. Example: {\"teacherId\": 123}", required = true, content = @Content(mediaType = "application/json", schema = @Schema(type="object", example = "{\"teacherId\": 123}")))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Teacher assigned successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ClassDTO.class))),
             @ApiResponse(responseCode = "400", description = "Bad Request (e.g. missing teacherId)", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class))),
@@ -130,14 +136,13 @@ public class ClassController {
             @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class))),
             @ApiResponse(responseCode = "404", description = "Class or Teacher not found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class)))
     })
-    public ResponseEntity<ClassDTO> assignClassTeacher(@PathVariable Long classId, @RequestBody Map<String, Long> payload) {
+    public ResponseEntity<ClassDTO> assignClassTeacher(@PathVariable Long classId, @org.springframework.web.bind.annotation.RequestBody Map<String, Long> payload) {
         Long teacherId = payload.get("teacherId");
         if (teacherId == null) {
-            // GlobalExceptionHandler will handle IllegalArgumentException if thrown from service, or use:
             throw new IllegalArgumentException("teacherId must be provided in the payload.");
         }
-        // Assuming assignClassTeacher in service handles authorization for ADMIN to their school
-        ClassDTO updatedClass = classService.assignClassTeacher(classId, teacherId);
+        User currentUser = getCurrentlyLoggedInUser();
+        ClassDTO updatedClass = classService.assignClassTeacher(classId, teacherId, currentUser);
         return ResponseEntity.ok(updatedClass);
     }
 
@@ -152,8 +157,8 @@ public class ClassController {
             @ApiResponse(responseCode = "404", description = "Class not found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class)))
     })
     public ResponseEntity<Void> deleteClass(@PathVariable Long id) {
-        // Assuming deleteClass in service handles authorization for ADMIN to their school
-        classService.deleteClass(id);
+        User currentUser = getCurrentlyLoggedInUser();
+        classService.deleteClass(id, currentUser);
         return ResponseEntity.noContent().build();
     }
 }

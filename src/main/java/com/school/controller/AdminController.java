@@ -22,7 +22,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.parameters.RequestBody as SwaggerRequestBody; // Renamed to avoid clash
+import io.swagger.v3.oas.annotations.parameters.RequestBody; // Correct import
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
@@ -48,8 +48,11 @@ public class AdminController {
 
     @PostMapping("/principals")
     @PreAuthorize("hasRole('SUPER_ADMIN')")
-    @Operation(summary = "Create a new Principal (School Admin)", description = "Accessible only by SUPER_ADMIN. Links the Principal to a specified school.")
-    @SwaggerRequestBody(description = "Details of the Principal to be created", required = true, content = @Content(schema = @Schema(implementation = CreatePrincipalRequestDTO.class)))
+    @Operation(
+        summary = "Create a new Principal (School Admin)",
+        description = "Accessible only by SUPER_ADMIN. Links the Principal to a specified school.",
+        requestBody = @RequestBody(description = "Details of the Principal to be created", required = true, content = @Content(schema = @Schema(implementation = CreatePrincipalRequestDTO.class)))
+    )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Principal created successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UserDTO.class))),
             @ApiResponse(responseCode = "400", description = "Bad Request (e.g., validation error, email exists, school not found)", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class))),
@@ -64,8 +67,11 @@ public class AdminController {
 
     @PostMapping("/teachers")
     @PreAuthorize("hasRole('ADMIN')") // School Admin (Principal)
-    @Operation(summary = "Create a new Teacher", description = "Accessible only by ADMIN (Principal). Teacher is associated with the Principal's school.")
-    @SwaggerRequestBody(description = "Details of the Teacher to be created", required = true, content = @Content(schema = @Schema(implementation = CreateTeacherByAdminRequestDTO.class)))
+    @Operation(
+        summary = "Create a new Teacher",
+        description = "Accessible only by ADMIN (Principal). Teacher is associated with the Principal's school.",
+        requestBody = @RequestBody(description = "Details of the Teacher to be created", required = true, content = @Content(schema = @Schema(implementation = CreateTeacherByAdminRequestDTO.class)))
+    )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Teacher created successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = TeacherDTO.class))),
             @ApiResponse(responseCode = "400", description = "Bad Request (e.g., validation error, email exists)", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class))),
@@ -80,8 +86,11 @@ public class AdminController {
 
     @PostMapping("/students")
     @PreAuthorize("hasRole('ADMIN')") // School Admin (Principal)
-    @Operation(summary = "Create a new Student", description = "Accessible only by ADMIN (Principal). Student is associated with the Principal's school and assigned to a class.")
-    @SwaggerRequestBody(description = "Details of the Student to be created", required = true, content = @Content(schema = @Schema(implementation = CreateStudentByAdminRequestDTO.class)))
+    @Operation(
+        summary = "Create a new Student",
+        description = "Accessible only by ADMIN (Principal). Student is associated with the Principal's school and assigned to a class.",
+        requestBody = @RequestBody(description = "Details of the Student to be created", required = true, content = @Content(schema = @Schema(implementation = CreateStudentByAdminRequestDTO.class)))
+    )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Student created successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = StudentDTO.class))),
             @ApiResponse(responseCode = "400", description = "Bad Request (e.g., validation error, email exists, class not in admin's school)", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class))),
@@ -97,8 +106,11 @@ public class AdminController {
 
     @PostMapping("/parents")
     @PreAuthorize("hasRole('ADMIN')") // School Admin (Principal)
-    @Operation(summary = "Create a new Parent user", description = "Accessible only by ADMIN (Principal). Parent is associated with the Principal's school.")
-    @SwaggerRequestBody(description = "Details of the Parent to be created", required = true, content = @Content(schema = @Schema(implementation = CreateParentByAdminRequestDTO.class)))
+    @Operation(
+        summary = "Create a new Parent user",
+        description = "Accessible only by ADMIN (Principal). Parent is associated with the Principal's school.",
+        requestBody = @RequestBody(description = "Details of the Parent to be created", required = true, content = @Content(schema = @Schema(implementation = CreateParentByAdminRequestDTO.class)))
+    )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Parent created successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UserDTO.class))),
             @ApiResponse(responseCode = "400", description = "Bad Request (e.g., validation error, email exists)", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class))),

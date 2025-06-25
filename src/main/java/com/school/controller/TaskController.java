@@ -10,7 +10,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.parameters.RequestBody as SwaggerRequestBody;
+import io.swagger.v3.oas.annotations.parameters.RequestBody; // Corrected import
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import com.school.dto.ErrorResponseDTO;
@@ -46,8 +46,11 @@ public class TaskController {
 
     @PostMapping
     @PreAuthorize("hasRole('TEACHER')")
-    @Operation(summary = "Create a new task", description = "Requires TEACHER role. Task is assigned by the authenticated teacher. Task can be linked to a student, class, or subject assignment.")
-    @SwaggerRequestBody(description = "Details of the task to be created", required = true, content = @Content(schema = @Schema(implementation = CreateTaskRequestDTO.class)))
+    @Operation(
+        summary = "Create a new task",
+        description = "Requires TEACHER role. Task is assigned by the authenticated teacher. Task can be linked to a student, class, or subject assignment.",
+        requestBody = @RequestBody(description = "Details of the task to be created", required = true, content = @Content(schema = @Schema(implementation = CreateTaskRequestDTO.class)))
+    )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Task created successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = TaskDTO.class))),
             @ApiResponse(responseCode = "400", description = "Bad Request (validation error, invalid context)", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class))),
@@ -109,9 +112,12 @@ public class TaskController {
 
     @PutMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
-    @Operation(summary = "Update an existing task", description = "Access and specific field update permissions (e.g., student updating status, teacher updating full task) are handled by service layer.")
+    @Operation(
+        summary = "Update an existing task",
+        description = "Access and specific field update permissions (e.g., student updating status, teacher updating full task) are handled by service layer.",
+        requestBody = @RequestBody(description = "Updated task details", required = true, content = @Content(schema = @Schema(implementation = UpdateTaskRequestDTO.class)))
+    )
     @Parameter(name = "id", description = "ID of the task to update", required = true, in = ParameterIn.PATH)
-    @SwaggerRequestBody(description = "Updated task details", required = true, content = @Content(schema = @Schema(implementation = UpdateTaskRequestDTO.class)))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Task updated successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = TaskDTO.class))),
             @ApiResponse(responseCode = "400", description = "Bad Request", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class))),

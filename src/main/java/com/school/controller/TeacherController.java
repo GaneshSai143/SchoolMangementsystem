@@ -10,7 +10,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.parameters.RequestBody as SwaggerRequestBody;
+import io.swagger.v3.oas.annotations.parameters.RequestBody; // Corrected import
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import com.school.dto.ErrorResponseDTO;
@@ -33,8 +33,11 @@ public class TeacherController {
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
-    @Operation(summary = "Create a new teacher profile", description = "Links an existing user with TEACHER role. Requires ADMIN or SUPER_ADMIN role.")
-    @SwaggerRequestBody(description = "Details of the teacher to be created", required = true, content = @Content(schema = @Schema(implementation = CreateTeacherRequestDTO.class)))
+    @Operation(
+        summary = "Create a new teacher profile",
+        description = "Links an existing user with TEACHER role. Requires ADMIN or SUPER_ADMIN role.",
+        requestBody = @RequestBody(description = "Details of the teacher to be created", required = true, content = @Content(schema = @Schema(implementation = CreateTeacherRequestDTO.class)))
+    )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Teacher profile created successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = TeacherDTO.class))),
             @ApiResponse(responseCode = "400", description = "Bad Request (validation error, user not TEACHER, user already a teacher)", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class))),
@@ -92,9 +95,12 @@ public class TeacherController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN') or @teacherServiceImpl.getTeacherById(#id).getUser().getEmail() == authentication.name")
-    @Operation(summary = "Update a teacher's subjects or other details", description = "Allows ADMIN, SUPER_ADMIN, or the teacher themselves to update their profile.")
+    @Operation(
+        summary = "Update a teacher's subjects or other details",
+        description = "Allows ADMIN, SUPER_ADMIN, or the teacher themselves to update their profile.",
+        requestBody = @RequestBody(description = "Details for updating the teacher's profile", required = true, content = @Content(schema = @Schema(implementation = UpdateTeacherRequestDTO.class)))
+    )
     @Parameter(name = "id", description = "ID of the teacher profile to update", required = true, in = ParameterIn.PATH)
-    @SwaggerRequestBody(description = "Details for updating the teacher's profile", required = true, content = @Content(schema = @Schema(implementation = UpdateTeacherRequestDTO.class)))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Teacher profile updated successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = TeacherDTO.class))),
             @ApiResponse(responseCode = "400", description = "Bad Request", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class))),

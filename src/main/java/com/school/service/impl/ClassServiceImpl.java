@@ -116,9 +116,16 @@ public class ClassServiceImpl implements ClassService {
 
     @Override
     @Transactional
-    public ClassDTO updateClass(Long id, UpdateClassRequestDTO requestDTO) {
+    public ClassDTO updateClass(Long id, UpdateClassRequestDTO requestDTO, User currentUser) {
         Classes classToUpdate = classRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Class not found with id: " + id));
+
+        if (currentUser.getRole() == UserRole.ADMIN) {
+            if (currentUser.getSchoolId() == null || !classToUpdate.getSchool().getId().equals(currentUser.getSchoolId())) {
+                throw new UnauthorizedActionException("Principal (Admin) can only update classes in their own school.");
+            }
+        }
+        // SUPER_ADMIN can update any class.
 
         if (requestDTO.getName() != null) {
             classToUpdate.setName(requestDTO.getName());
@@ -137,15 +144,31 @@ public class ClassServiceImpl implements ClassService {
 
     @Override
     @Transactional
-    public ClassDTO assignClassTeacher(Long classId, Long teacherId) {
+    public ClassDTO assignClassTeacher(Long classId, Long teacherId, User currentUser) {
         Classes classToUpdate = classRepository.findById(classId)
                 .orElseThrow(() -> new ResourceNotFoundException("Class not found with id: " + classId));
-        User teacher = userRepository.findById(teacherId)
+        User teacherUser = userRepository.findById(teacherId) // Renamed to avoid conflict
                 .orElseThrow(() -> new ResourceNotFoundException("Teacher (User) not found with id: " + teacherId));
-        // Add validation: Ensure user is a Teacher (role check)
-        // Ensure teacher is part of the same school? (More complex logic)
 
-        classToUpdate.setClassTeacher(teacher);
+        if (currentUser.getRole() == UserRole.ADMIN) {
+            if (currentUser.getSchoolId() == null) {
+                throw new UnauthorizedActionException("Principal (Admin) is not associated with a school.");
+            }
+            if (!classToUpdate.getSchool().getId().equals(currentUser.getSchoolId())) {
+                throw new UnauthorizedActionException("Principal (Admin) can only assign teachers for classes in their own school.");
+            }
+            if (teacherUser.getSchoolId() == null || !teacherUser.getSchoolId().equals(currentUser.getSchoolId())) {
+                 throw new UnauthorizedActionException("Teacher does not belong to the Principal's school.");
+            }
+        }
+        // SUPER_ADMIN can assign any teacher to any class.
+        // Add validation: Ensure user is a Teacher (role check)
+        if (teacherUser.getRole() != UserRole.TEACHER) {
+            throw new IllegalArgumentException("User with ID " + teacherId + " is not a TEACHER and cannot be assigned as class teacher.");
+        }
+
+
+        classToUpdate.setClassTeacher(teacherUser);
         Classes updatedClass = classRepository.save(classToUpdate);
         return convertToDTO(updatedClass);
     }
@@ -153,10 +176,17 @@ public class ClassServiceImpl implements ClassService {
 
     @Override
     @Transactional
-    public void deleteClass(Long id) {
-        if (!classRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Class not found with id: " + id);
+    public void deleteClass(Long id, User currentUser) {
+        Classes classToDelete = classRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Class not found with id: " + id));
+
+        if (currentUser.getRole() == UserRole.ADMIN) {
+            if (currentUser.getSchoolId() == null || !classToDelete.getSchool().getId().equals(currentUser.getSchoolId())) {
+                throw new UnauthorizedActionException("Principal (Admin) can only delete classes in their own school.");
+            }
         }
+        // SUPER_ADMIN can delete any class.
+
         // Consider implications: students in this class?
         classRepository.deleteById(id);
     }

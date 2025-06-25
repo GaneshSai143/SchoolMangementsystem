@@ -10,7 +10,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.parameters.RequestBody as SwaggerRequestBody;
+import io.swagger.v3.oas.annotations.parameters.RequestBody; // Corrected
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import com.school.dto.ErrorResponseDTO;
@@ -47,8 +47,11 @@ public class StudentController {
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
-    @Operation(summary = "Create a new student profile", description = "Links an existing user with STUDENT role to a class. Requires ADMIN or SUPER_ADMIN role.")
-    @SwaggerRequestBody(description = "Details of the student to be created", required = true, content = @Content(schema = @Schema(implementation = CreateStudentRequestDTO.class)))
+    @Operation(
+        summary = "Create a new student profile",
+        description = "Links an existing user with STUDENT role to a class. Requires ADMIN or SUPER_ADMIN role.",
+        requestBody = @RequestBody(description = "Details of the student to be created", required = true, content = @Content(schema = @Schema(implementation = CreateStudentRequestDTO.class)))
+    )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Student profile created successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = StudentDTO.class))),
             @ApiResponse(responseCode = "400", description = "Bad Request (validation error, user not STUDENT, user already a student, class not found)", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class))),
@@ -56,8 +59,9 @@ public class StudentController {
             @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class))),
             @ApiResponse(responseCode = "404", description = "User or Class not found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class)))
     })
-    public ResponseEntity<StudentDTO> createStudent(@Valid @RequestBody CreateStudentRequestDTO requestDTO) {
-        StudentDTO createdStudent = studentService.createStudent(requestDTO);
+    public ResponseEntity<StudentDTO> createStudent(@Valid @org.springframework.web.bind.annotation.RequestBody CreateStudentRequestDTO requestDTO) {
+        User currentUser = getCurrentlyLoggedInUser();
+        StudentDTO createdStudent = studentService.createStudent(requestDTO, currentUser);
         return new ResponseEntity<>(createdStudent, HttpStatus.CREATED);
     }
 
@@ -116,9 +120,12 @@ public class StudentController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
-    @Operation(summary = "Update a student's class assignment", description = "Requires ADMIN or SUPER_ADMIN role.")
+    @Operation(
+        summary = "Update a student's class assignment",
+        description = "Requires ADMIN or SUPER_ADMIN role.",
+        requestBody = @RequestBody(description = "Details for updating the student's class", required = true, content = @Content(schema = @Schema(implementation = UpdateStudentRequestDTO.class)))
+    )
     @Parameter(name = "id", description = "ID of the student profile to update", required = true, in = ParameterIn.PATH)
-    @SwaggerRequestBody(description = "Details for updating the student's class", required = true, content = @Content(schema = @Schema(implementation = UpdateStudentRequestDTO.class)))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Student profile updated successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = StudentDTO.class))),
             @ApiResponse(responseCode = "400", description = "Bad Request", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class))),
@@ -126,8 +133,9 @@ public class StudentController {
             @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class))),
             @ApiResponse(responseCode = "404", description = "Student profile or Class not found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class)))
     })
-    public ResponseEntity<StudentDTO> updateStudent(@PathVariable Long id, @Valid @RequestBody UpdateStudentRequestDTO requestDTO) {
-        StudentDTO updatedStudent = studentService.updateStudent(id, requestDTO);
+    public ResponseEntity<StudentDTO> updateStudent(@PathVariable Long id, @Valid @org.springframework.web.bind.annotation.RequestBody UpdateStudentRequestDTO requestDTO) {
+        User currentUser = getCurrentlyLoggedInUser();
+        StudentDTO updatedStudent = studentService.updateStudent(id, requestDTO, currentUser);
         return ResponseEntity.ok(updatedStudent);
     }
 
@@ -142,9 +150,8 @@ public class StudentController {
             @ApiResponse(responseCode = "404", description = "Student profile not found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class)))
     })
     public ResponseEntity<Void> deleteStudent(@PathVariable Long id) {
-        studentService.deleteStudent(id);
+        User currentUser = getCurrentlyLoggedInUser();
+        studentService.deleteStudent(id, currentUser);
         return ResponseEntity.noContent().build();
-    }
-}
     }
 }
