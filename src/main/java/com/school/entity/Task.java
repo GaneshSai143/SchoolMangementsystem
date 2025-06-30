@@ -9,6 +9,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -39,10 +42,12 @@ public class Task {
 
     @Column(name = "status", nullable = false, length = 50)
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private TaskStatus status;
 
     @Column(name = "priority", length = 50)
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private TaskPriority priority;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -63,6 +68,7 @@ public class Task {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "task_type", length = 50)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private TaskType taskType;
 
     @CreatedDate

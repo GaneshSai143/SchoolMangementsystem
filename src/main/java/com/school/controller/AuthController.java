@@ -8,8 +8,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.parameters.RequestBody; // Corrected import
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+//import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import com.school.dto.ErrorResponseDTO; // Added for error responses
 import jakarta.validation.Valid;
@@ -28,8 +28,8 @@ public class AuthController {
     @PostMapping("/register")
     @Operation(
         summary = "Register a new user",
-        description = "Creates a new user account. Default role is STUDENT.",
-        requestBody = @RequestBody(description = "User registration details", required = true, content = @Content(schema = @Schema(implementation = RegisterRequest.class)))
+        description = "Creates a new user account. Default role is STUDENT."
+//        requestBody = @RequestBody(description = "User registration details", required = true, content = @Content(schema = @Schema(implementation = RegisterRequest.class)))
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "User registered successfully"), // Kept as 200 based on existing code.
@@ -47,8 +47,8 @@ public class AuthController {
     @PostMapping("/login")
     @Operation(
         summary = "Login an existing user",
-        description = "Authenticates a user and returns an access token.",
-        requestBody = @RequestBody(description = "User login credentials", required = true, content = @Content(schema = @Schema(implementation = LoginRequest.class)))
+        description = "Authenticates a user and returns an access token."
+//        requestBody = @RequestBody(description = "User login credentials", required = true, content = @Content(schema = @Schema(implementation = LoginRequest.class)))
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Login successful", content = @Content(mediaType = "application/json", schema = @Schema(implementation = LoginResponse.class))),

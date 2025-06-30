@@ -38,7 +38,8 @@ public class AuthService {
                 .lastName(request.getLastName())
                 .role(UserRole.STUDENT) // Default role
                 .phoneNumber(request.getPhoneNumber())
-                .enabled(true)
+                .enabled(true).authProvider(request.getAuthProvider())
+                .preferredTheme(request.getPreferredTheme())
                 .build();
 
         userRepository.save(user);
