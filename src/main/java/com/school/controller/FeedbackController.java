@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/feedback")
+@RequestMapping("/feedback")
 @RequiredArgsConstructor
 @Tag(name = "Feedback Management", description = "APIs for managing feedback from teachers to students")
 public class FeedbackController {

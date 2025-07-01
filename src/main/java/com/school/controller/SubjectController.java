@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/subjects")
+@RequestMapping("/subjects")
 @RequiredArgsConstructor
 @Tag(name = "Subject Management", description = "APIs for managing general academic subjects")
 public class SubjectController {

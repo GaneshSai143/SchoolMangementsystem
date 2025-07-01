@@ -30,7 +30,7 @@ import com.school.exception.ResourceNotFoundException;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/students")
+@RequestMapping("/students")
 @RequiredArgsConstructor
 @Tag(name = "Student Management", description = "APIs for managing student profiles")
 public class StudentController {

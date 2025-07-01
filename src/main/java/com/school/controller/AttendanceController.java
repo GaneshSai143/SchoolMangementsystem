@@ -30,7 +30,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/attendance")
+@RequestMapping("/attendance")
 @RequiredArgsConstructor
 @Tag(name = "Attendance Management", description = "APIs for recording and viewing student attendance")
 public class AttendanceController {

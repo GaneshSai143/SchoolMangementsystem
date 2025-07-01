@@ -8,7 +8,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.parameters.RequestBody; // Corrected import
+//import io.swagger.v3.oas.annotations.parameters.RequestBody; // Corrected import
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import com.school.dto.ErrorResponseDTO;
@@ -70,8 +70,8 @@ public class UserController {
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN') or #id == authentication.principal.id")
     @Operation(
         summary = "Update user details",
-        description = "Allows ADMIN/SUPER_ADMIN to update any user, or a user to update their own profile. Password update is conditional.",
-        requestBody = @RequestBody(description = "User details to update. Password field is optional; if provided, it will be updated.", required = true, content = @Content(schema = @Schema(implementation = UserDTO.class)))
+        description = "Allows ADMIN/SUPER_ADMIN to update any user, or a user to update their own profile. Password update is conditional."
+//        requestBody = @RequestBody(description = "User details to update. Password field is optional; if provided, it will be updated.", required = true, content = @Content(schema = @Schema(implementation = UserDTO.class)))
     )
     @Parameter(name = "id", description = "ID of the user to update", required = true, in = ParameterIn.PATH)
     @ApiResponses(value = {
@@ -160,8 +160,8 @@ public class UserController {
     @PreAuthorize("isAuthenticated()")
     @Operation(
         summary = "Update preferred theme for the current user",
-        description = "Accepts a JSON payload with a 'theme' key, e.g., {\"theme\": \"#RRGGBB\"} or {\"theme\": \"dark-mode\"}",
-        requestBody = @RequestBody(description = "JSON payload containing the theme preference. Example: {\"theme\": \"dark\"}", required = true, content = @Content(mediaType = "application/json", schema = @Schema(type = "object", example = "{\"theme\": \"dark\"}")))
+        description = "Accepts a JSON payload with a 'theme' key, e.g., {\"theme\": \"#RRGGBB\"} or {\"theme\": \"dark-mode\"}"
+//        requestBody = @RequestBody(description = "JSON payload containing the theme preference. Example: {\"theme\": \"dark\"}", required = true, content = @Content(mediaType = "application/json", schema = @Schema(type = "object", example = "{\"theme\": \"dark\"}")))
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Theme updated successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UserDTO.class))),

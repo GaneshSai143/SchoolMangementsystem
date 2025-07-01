@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/marks")
+@RequestMapping("/marks")
 @RequiredArgsConstructor
 @Tag(name = "Marks Management", description = "APIs for entering and viewing student marks")
 public class MarkController {

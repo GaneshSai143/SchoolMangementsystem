@@ -30,7 +30,7 @@ import java.util.Map;
 
 
 @RestController
-@RequestMapping("/api/subject-assignments")
+@RequestMapping("/subject-assignments")
 @RequiredArgsConstructor
 @Tag(name = "Subject Assignment Management", description = "APIs for assigning subjects to classes and teachers")
 public class SubjectAssignmentController {

@@ -32,7 +32,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 @RestController
-@RequestMapping("/api/admin")
+@RequestMapping("/admin")
 @RequiredArgsConstructor
 @Tag(name = "Admin User Management", description = "APIs for administrators to create Principals, Teachers, and Students")
 public class AdminController {
