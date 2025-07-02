@@ -33,4 +33,5 @@ public class UserDTO {
     private LocalDateTime updatedAt;
     private String provider;
     private String providerId;
+    private String preferredTheme;
 } 

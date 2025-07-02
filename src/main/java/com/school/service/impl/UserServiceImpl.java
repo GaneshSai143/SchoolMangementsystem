@@ -4,6 +4,7 @@ import com.school.dto.UserDTO;
 import com.school.entity.User;
 import com.school.entity.UserRole;
 import com.school.exception.ResourceNotFoundException;
+import com.school.exception.UnauthorizedActionException; // Added
 import com.school.repository.UserRepository;
 import com.school.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -48,30 +49,57 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public UserDTO updateUser(Long id, UserDTO userDTO) {
-        User user = userRepository.findById(id)
+    public UserDTO updateUser(Long id, UserDTO userDTO, User currentUser) {
+        User userToUpdate = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
 
-        user.setFirstName(userDTO.getFirstName());
-        user.setLastName(userDTO.getLastName());
-        user.setPhoneNumber(userDTO.getPhoneNumber());
+        // If ADMIN, check they are updating a user in their own school
+        // SUPER_ADMIN can update anyone. Users can update themselves (handled by PreAuthorize).
+        if (currentUser.getRole() == UserRole.ADMIN) {
+            if (currentUser.getSchoolId() == null) {
+                throw new UnauthorizedActionException("Principal (Admin) is not associated with a school.");
+            }
+            if (userToUpdate.getSchoolId() == null || !userToUpdate.getSchoolId().equals(currentUser.getSchoolId())) {
+                 throw new UnauthorizedActionException("Principal (Admin) can only update users within their own school.");
+            }
+        }
+        // Note: UserDTO does not contain schoolId or role, so user cannot change these via this method.
+        // Password can be changed by self or admin.
+        // For self-update, PreAuthorize ensures it's their own ID.
+
+        userToUpdate.setFirstName(userDTO.getFirstName());
+        userToUpdate.setLastName(userDTO.getLastName());
+        userToUpdate.setPhoneNumber(userDTO.getPhoneNumber());
         if (userDTO.getPassword() != null && !userDTO.getPassword().isEmpty()) {
-            user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
+            userToUpdate.setPassword(passwordEncoder.encode(userDTO.getPassword()));
         }
 
-        User updatedUser = userRepository.save(user);
+        User updatedUser = userRepository.save(userToUpdate);
         return convertToDTO(updatedUser);
     }
 
     @Override
     @Transactional
-    public void deleteUser(Long id) {
+    public void deleteUser(Long id, User currentUser) {
+        // Controller PreAuthorize restricts this to SUPER_ADMIN only.
+        // If ADMIN were allowed, school scoping check would be needed:
+        // User userToDelete = userRepository.findById(id)
+        //         .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+        // if (currentUser.getRole() == UserRole.ADMIN) {
+        //     if (currentUser.getSchoolId() == null) {
+        //         throw new UnauthorizedActionException("Principal (Admin) is not associated with a school.");
+        //     }
+        //     if (userToDelete.getSchoolId() == null || !userToDelete.getSchoolId().equals(currentUser.getSchoolId())) {
+        //         throw new UnauthorizedActionException("Principal (Admin) can only delete users within their own school.");
+        //     }
+        // }
         if (!userRepository.existsById(id)) {
             throw new ResourceNotFoundException("User not found with id: " + id);
         }
         userRepository.deleteById(id);
     }
 
+    // UserDTO getUserById(Long id) remains unchanged, access controlled by PreAuthorize or higher service layers.
     @Override
     public UserDTO getUserById(Long id) {
         User user = userRepository.findById(id)
@@ -88,7 +116,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public User processOAuth2User(String email, String name, String provider) {
+    public UserDTO processOAuth2User(String email, String name, String provider) {
         String[] nameParts = name.split(" ", 2);
         String firstName = nameParts[0];
         String lastName = nameParts.length > 1 ? nameParts[1] : "";
@@ -99,7 +127,7 @@ public class UserServiceImpl implements UserService {
                     user.setFirstName(firstName);
                     user.setLastName(lastName);
                     user.setAuthProvider(provider);
-                    return userRepository.save(user);
+                    return convertToDTO(userRepository.save(user));
                 })
                 .orElseGet(() -> {
                     // Create new user
@@ -111,7 +139,7 @@ public class UserServiceImpl implements UserService {
                             .enabled(true)
                             .authProvider(provider)
                             .build();
-                    return userRepository.save(newUser);
+                    return convertToDTO(userRepository.save(newUser));
                 });
     }
 
@@ -123,30 +151,53 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void updateUserRole(Long userId, String role) {
-        User user = userRepository.findById(userId)
+    public void updateUserRole(Long userId, String role, User currentUser) {
+        // Controller PreAuthorize restricts this to SUPER_ADMIN only.
+        // If ADMIN were allowed, school scoping check would be needed.
+        User userToUpdate = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
-        user.setRole(UserRole.valueOf(role.toUpperCase()));
-        userRepository.save(user);
+        userToUpdate.setRole(UserRole.valueOf(role.toUpperCase()));
+        userRepository.save(userToUpdate);
     }
 
     @Override
     @Transactional
-    public void enableUser(Long userId) {
-        User user = userRepository.findById(userId)
+    public void enableUser(Long userId, User currentUser) {
+        User userToEnable = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
-        user.setEnabled(true);
-        userRepository.save(user);
+
+        if (currentUser.getRole() == UserRole.ADMIN) {
+            if (currentUser.getSchoolId() == null) {
+                throw new UnauthorizedActionException("Principal (Admin) is not associated with a school.");
+            }
+            if (userToEnable.getSchoolId() == null || !userToEnable.getSchoolId().equals(currentUser.getSchoolId())) {
+                throw new UnauthorizedActionException("Principal (Admin) can only enable users within their own school.");
+            }
+        }
+        // SUPER_ADMIN can enable anyone.
+        userToEnable.setEnabled(true);
+        userRepository.save(userToEnable);
     }
 
     @Override
     @Transactional
-    public void disableUser(Long userId) {
-        User user = userRepository.findById(userId)
+    public void disableUser(Long userId, User currentUser) {
+        User userToDisable = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
-        user.setEnabled(false);
-        userRepository.save(user);
+
+        if (currentUser.getRole() == UserRole.ADMIN) {
+            if (currentUser.getSchoolId() == null) {
+                throw new UnauthorizedActionException("Principal (Admin) is not associated with a school.");
+            }
+            if (userToDisable.getSchoolId() == null || !userToDisable.getSchoolId().equals(currentUser.getSchoolId())) {
+                throw new UnauthorizedActionException("Principal (Admin) can only disable users within their own school.");
+            }
+        }
+        // SUPER_ADMIN can disable anyone.
+        userToDisable.setEnabled(false);
+        userRepository.save(userToDisable);
     }
+
 
     @Override
     public List<UserDTO> getUsersByRole(UserRole role) {
@@ -174,7 +225,7 @@ public class UserServiceImpl implements UserService {
         return users.stream().map(this::convertToDTO).collect(Collectors.toList());
     }
 
-    private UserDTO convertToDTO(User user) {
+    public UserDTO convertToDTO(User user) {
         UserDTO dto = new UserDTO();
         dto.setId(user.getId());
         dto.setEmail(user.getEmail());
@@ -186,6 +237,17 @@ public class UserServiceImpl implements UserService {
         dto.setSchoolId(user.getSchoolId()); // Ensure schoolId is mapped
         dto.setCreatedAt(user.getCreatedAt());
         dto.setUpdatedAt(user.getUpdatedAt());
+        dto.setPreferredTheme(user.getPreferredTheme()); // Add this line
         return dto;
     }
-}
+
+    @Override
+    @Transactional
+    public UserDTO updateUserTheme(String userEmail, String theme) {
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userEmail));
+        user.setPreferredTheme(theme);
+        User updatedUser = userRepository.save(user);
+        return convertToDTO(updatedUser);
+    }
+} 

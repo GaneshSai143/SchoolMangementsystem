@@ -1,8 +1,13 @@
 package com.school.security;
 
+import com.school.dto.UserDTO;
 import com.school.entity.User;
 import com.school.service.UserService;
+
+import ch.qos.logback.core.joran.util.beans.BeanUtil;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.beans.BeanUtils;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
@@ -27,9 +32,12 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
             String name = getNameFromOAuth2User(provider, oauth2User);
             
             // Process the OAuth2 user
-            User user = userService.processOAuth2User(email, name, provider);
-            
-            return new CustomOAuth2User(user, oauth2User.getAttributes());
+            UserDTO user = userService.processOAuth2User(email, name, provider);
+            User u = new User();
+            System.out.println(u.getEmail()+"before copy from dto");
+            BeanUtils.copyProperties(u, user);
+            System.out.println(u.getEmail()+"after copy from dto");
+            return new CustomOAuth2User(u, oauth2User.getAttributes());
         } catch (Exception ex) {
             throw new OAuth2AuthenticationException(ex.getMessage());
         }

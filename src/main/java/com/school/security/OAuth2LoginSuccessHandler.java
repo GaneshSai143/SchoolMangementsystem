@@ -1,5 +1,6 @@
 package com.school.security;
 
+import com.school.dto.UserDTO;
 import com.school.entity.User;
 import com.school.service.UserService;
 import jakarta.servlet.ServletException;
@@ -42,7 +43,7 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
             }
 
             // Process the OAuth2 user
-            User user = userService.processOAuth2User(email, name, provider);
+            UserDTO user = userService.processOAuth2User(email, name, provider);
 
             // Generate JWT token
             String jwt = tokenProvider.generateToken(authentication);

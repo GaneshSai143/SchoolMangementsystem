@@ -2,7 +2,8 @@ package com.school.entity;
 
 public enum UserRole {
     SUPER_ADMIN,
-    ADMIN,
+    ADMIN,     // School Principal
     TEACHER,
-    STUDENT
+    STUDENT,
+    PARENT     // Newly added
 }

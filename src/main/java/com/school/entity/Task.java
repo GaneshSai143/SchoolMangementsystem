@@ -1,10 +1,17 @@
 package com.school.entity;
 
+import com.school.entity.enums.TaskPriority;
+import com.school.entity.enums.TaskStatus;
+import com.school.entity.enums.TaskType; // Added import
+import com.school.entity.SubjectAssignment;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -35,10 +42,12 @@ public class Task {
 
     @Column(name = "status", nullable = false, length = 50)
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private TaskStatus status;
 
     @Column(name = "priority", length = 50)
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private TaskPriority priority;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -53,6 +62,15 @@ public class Task {
     @JoinColumn(name = "class_id", referencedColumnName = "id")
     private Classes classes;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "subject_assignment_id")
+    private SubjectAssignment subjectAssignment;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "task_type", length = 50)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private TaskType taskType;
+
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -60,17 +78,4 @@ public class Task {
     @LastModifiedDate
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
-}
-
-enum TaskStatus {
-    PENDING,
-    IN_PROGRESS,
-    COMPLETED,
-    CANCELLED
-}
-
-enum TaskPriority {
-    LOW,
-    MEDIUM,
-    HIGH
 }
