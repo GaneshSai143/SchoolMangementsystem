@@ -17,4 +17,5 @@ public interface UserService {
     void updateUserRole(Long userId, String role);
     void enableUser(Long userId);
     void disableUser(Long userId);
+    List<UserDTO> getUsersByRole(UserRole role);
 } 

@@ -1,6 +1,7 @@
 package com.school.controller;
 
 import com.school.dto.UserDTO;
+import com.school.entity.UserRole;
 import com.school.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -8,12 +9,20 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
 public class UserController {
 
     private final UserService userService;
+
+    @GetMapping("/by-role")
+    @PreAuthorize("hasRole('SUPER_ADMIN') or hasRole('ADMIN')")
+    public ResponseEntity<List<UserDTO>> getUsersByRole(@RequestParam UserRole role) {
+        return ResponseEntity.ok(userService.getUsersByRole(role));
+    }
 
     @GetMapping("/me")
     public ResponseEntity<UserDTO> getCurrentUser() {
