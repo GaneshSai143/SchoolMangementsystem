@@ -14,6 +14,7 @@ public interface UserService {
     UserDTO getUserByEmail(String email);
     UserDTO processOAuth2User(String email, String name, String provider);
     UserDTO getCurrentUser();
+    List<UserDTO> getUsersByRole(UserRole role);
     void updateUserRole(Long userId, String role, User currentUser);
     void enableUser(Long userId, User currentUser);
     void disableUser(Long userId, User currentUser);

@@ -8,13 +8,16 @@ import com.school.exception.UnauthorizedActionException; // Added
 import com.school.repository.UserRepository;
 import com.school.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -195,6 +198,33 @@ public class UserServiceImpl implements UserService {
         userRepository.save(userToDisable);
     }
 
+
+    @Override
+    public List<UserDTO> getUsersByRole(UserRole role) {
+        UserDTO currentUserDTO = getCurrentUser();
+        User currentUser = userRepository.findByEmail(currentUserDTO.getEmail())
+                .orElseThrow(() -> new ResourceNotFoundException("Current user not found: " + currentUserDTO.getEmail()));
+
+        List<User> users;
+        if (currentUser.getRole() == UserRole.SUPER_ADMIN) {
+            users = userRepository.findAllByRole(role);
+        } else if (currentUser.getRole() == UserRole.ADMIN) {
+            if (role == UserRole.PRINCIPAL) {
+                // Admins are not allowed to list all principals.
+                throw new AccessDeniedException("Admins are not allowed to list all principals.");
+            }
+            // Admins can only list users within their own school
+            if (currentUser.getSchoolId() == null) {
+                throw new AccessDeniedException("Admin is not associated with any school.");
+            }
+            users = userRepository.findAllByRoleAndSchoolId(role, currentUser.getSchoolId());
+        } else {
+            // Other roles (TEACHER, STUDENT) are not allowed to list users by role
+            throw new AccessDeniedException("You do not have permission to access this resource.");
+        }
+        return users.stream().map(this::convertToDTO).collect(Collectors.toList());
+    }
+
     public UserDTO convertToDTO(User user) {
         UserDTO dto = new UserDTO();
         dto.setId(user.getId());
@@ -204,6 +234,7 @@ public class UserServiceImpl implements UserService {
         dto.setPhoneNumber(user.getPhoneNumber());
         dto.setRole(user.getRole());
         dto.setEnabled(user.isEnabled());
+        dto.setSchoolId(user.getSchoolId()); // Ensure schoolId is mapped
         dto.setCreatedAt(user.getCreatedAt());
         dto.setUpdatedAt(user.getUpdatedAt());
         dto.setPreferredTheme(user.getPreferredTheme()); // Add this line

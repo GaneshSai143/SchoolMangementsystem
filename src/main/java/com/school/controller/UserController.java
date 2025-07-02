@@ -1,6 +1,7 @@
 package com.school.controller;
 
 import com.school.dto.UserDTO;
+import com.school.entity.UserRole;
 import com.school.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -23,7 +24,8 @@ import org.springframework.security.core.Authentication; // Added
 import org.springframework.security.core.context.SecurityContextHolder; // Added
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map; // Added
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/users")
@@ -40,6 +42,12 @@ public class UserController {
         String userEmail = authentication.getName();
         return userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("Authenticated user not found with email: " + userEmail));
+    }
+
+    @GetMapping("/by-role")
+    @PreAuthorize("hasRole('SUPER_ADMIN') or hasRole('ADMIN')")
+    public ResponseEntity<List<UserDTO>> getUsersByRole(@RequestParam UserRole role) {
+        return ResponseEntity.ok(userService.getUsersByRole(role));
     }
 
     @GetMapping("/me")
