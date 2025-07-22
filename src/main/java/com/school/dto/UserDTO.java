@@ -34,4 +34,5 @@ public class UserDTO {
     private String provider;
     private String providerId;
     private String preferredTheme;
+    private Long schoolId;
 } 

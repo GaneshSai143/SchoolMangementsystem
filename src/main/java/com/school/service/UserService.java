@@ -2,8 +2,11 @@ package com.school.service;
 
 import com.school.dto.UserDTO;
 import com.school.entity.User;
+import com.school.entity.UserRole;
+
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface UserService {

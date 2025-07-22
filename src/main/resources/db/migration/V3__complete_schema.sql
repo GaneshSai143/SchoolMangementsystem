@@ -1,0 +1,233 @@
+---- Complete DDL Script for School Management System
+---- Generated based on JPA Entity classes and Enums
+--
+---- Drop existing tables if they exist (for clean migration)
+--DROP TABLE IF EXISTS feedback CASCADE;
+--DROP TABLE IF EXISTS marks CASCADE;
+--DROP TABLE IF EXISTS attendance CASCADE;
+--DROP TABLE IF EXISTS tasks CASCADE;
+--DROP TABLE IF EXISTS subject_assignments CASCADE;
+--DROP TABLE IF EXISTS teacher_subjects CASCADE;
+--DROP TABLE IF EXISTS teachers CASCADE;
+--DROP TABLE IF EXISTS student_profiles CASCADE;
+--DROP TABLE IF EXISTS classes CASCADE;
+--DROP TABLE IF EXISTS subjects CASCADE;
+--DROP TABLE IF EXISTS schools CASCADE;
+--DROP TABLE IF EXISTS users CASCADE;
+--
+---- Create ENUM types for PostgreSQL
+--CREATE TYPE user_role_enum AS ENUM ('SUPER_ADMIN', 'ADMIN', 'TEACHER', 'STUDENT', 'PARENT');
+--CREATE TYPE attendance_status_enum AS ENUM ('PRESENT', 'ABSENT', 'LATE', 'EXCUSED_ABSENCE');
+--CREATE TYPE task_status_enum AS ENUM ('PENDING', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED');
+--CREATE TYPE task_priority_enum AS ENUM ('LOW', 'MEDIUM', 'HIGH');
+--CREATE TYPE task_type_enum AS ENUM ('HOMEWORK', 'EXAM', 'QUIZ', 'PROJECT', 'OTHER');
+--
+---- 1. USERS TABLE
+--CREATE TABLE users (
+--    id BIGSERIAL PRIMARY KEY,
+--    email VARCHAR(255) NOT NULL UNIQUE,
+--    password VARCHAR(255) NOT NULL,
+--    first_name VARCHAR(255) NOT NULL,
+--    last_name VARCHAR(255) NOT NULL,
+--    role user_role_enum NOT NULL,
+--    phone_number VARCHAR(20),
+--    enabled BOOLEAN NOT NULL DEFAULT TRUE,
+--    school_id BIGINT,
+--    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+--    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+--    auth_provider VARCHAR(50),
+--    provider_id VARCHAR(255),
+--    preferred_theme VARCHAR(255)
+--);
+--
+---- 2. SCHOOLS TABLE
+--CREATE TABLE schools (
+--    id BIGSERIAL PRIMARY KEY,
+--    name VARCHAR(255) NOT NULL,
+--    location VARCHAR(255) NOT NULL,
+--    principal_id BIGINT,
+--    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+--    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+--    CONSTRAINT fk_schools_principal FOREIGN KEY (principal_id) REFERENCES users(id)
+--);
+--
+---- 3. CLASSES TABLE
+--CREATE TABLE classes (
+--    id BIGSERIAL PRIMARY KEY,
+--    name VARCHAR(255) NOT NULL,
+--    school_id BIGINT NOT NULL,
+--    class_teacher_id BIGINT,
+--    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+--    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+--    CONSTRAINT fk_classes_school FOREIGN KEY (school_id) REFERENCES schools(id),
+--    CONSTRAINT fk_classes_teacher FOREIGN KEY (class_teacher_id) REFERENCES users(id)
+--);
+--
+---- 4. SUBJECTS TABLE
+--CREATE TABLE subjects (
+--    id BIGSERIAL PRIMARY KEY,
+--    name VARCHAR(255) NOT NULL UNIQUE,
+--    subject_code VARCHAR(255) UNIQUE,
+--    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+--    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+--);
+--
+---- 5. TEACHERS TABLE
+--CREATE TABLE teachers (
+--    id BIGSERIAL PRIMARY KEY,
+--    user_id BIGINT NOT NULL UNIQUE,
+--    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+--    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+--    CONSTRAINT fk_teachers_user FOREIGN KEY (user_id) REFERENCES users(id)
+--);
+--
+---- 6. TEACHER_SUBJECTS TABLE (ElementCollection)
+--CREATE TABLE teacher_subjects (
+--    teacher_id BIGINT NOT NULL,
+--    subject VARCHAR(255) NOT NULL,
+--    CONSTRAINT fk_teacher_subjects_teacher FOREIGN KEY (teacher_id) REFERENCES teachers(id),
+--    PRIMARY KEY (teacher_id, subject)
+--);
+--
+---- 7. STUDENT_PROFILES TABLE
+--CREATE TABLE student_profiles (
+--    id BIGSERIAL PRIMARY KEY,
+--    user_id BIGINT NOT NULL UNIQUE,
+--    class_id BIGINT NOT NULL,
+--    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+--    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+--    CONSTRAINT fk_student_profiles_user FOREIGN KEY (user_id) REFERENCES users(id),
+--    CONSTRAINT fk_student_profiles_class FOREIGN KEY (class_id) REFERENCES classes(id)
+--);
+--
+---- 8. SUBJECT_ASSIGNMENTS TABLE
+--CREATE TABLE subject_assignments (
+--    id BIGSERIAL PRIMARY KEY,
+--    class_id BIGINT NOT NULL,
+--    subject_id BIGINT NOT NULL,
+--    teacher_id BIGINT NOT NULL,
+--    academic_year VARCHAR(50) NOT NULL,
+--    term VARCHAR(50) NOT NULL,
+--    status VARCHAR(50) NOT NULL DEFAULT 'ACTIVE',
+--    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+--    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+--    CONSTRAINT fk_subject_assignments_class FOREIGN KEY (class_id) REFERENCES classes(id),
+--    CONSTRAINT fk_subject_assignments_subject FOREIGN KEY (subject_id) REFERENCES subjects(id),
+--    CONSTRAINT fk_subject_assignments_teacher FOREIGN KEY (teacher_id) REFERENCES teachers(id),
+--    CONSTRAINT uk_subject_assignments_unique UNIQUE (class_id, subject_id, teacher_id, academic_year, term)
+--);
+--
+---- 9. TASKS TABLE
+--CREATE TABLE tasks (
+--    id BIGSERIAL PRIMARY KEY,
+--    title VARCHAR(255) NOT NULL,
+--    description TEXT,
+--    due_date TIMESTAMP NOT NULL,
+--    status task_status_enum NOT NULL,
+--    priority task_priority_enum,
+--    student_id BIGINT,
+--    teacher_id BIGINT,
+--    class_id BIGINT,
+--    subject_assignment_id BIGINT,
+--    task_type task_type_enum,
+--    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+--    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+--    CONSTRAINT fk_tasks_student FOREIGN KEY (student_id) REFERENCES student_profiles(id),
+--    CONSTRAINT fk_tasks_teacher FOREIGN KEY (teacher_id) REFERENCES teachers(id),
+--    CONSTRAINT fk_tasks_class FOREIGN KEY (class_id) REFERENCES classes(id),
+--    CONSTRAINT fk_tasks_subject_assignment FOREIGN KEY (subject_assignment_id) REFERENCES subject_assignments(id)
+--);
+--
+---- 10. ATTENDANCE TABLE
+--CREATE TABLE attendance (
+--    id BIGSERIAL PRIMARY KEY,
+--    student_id BIGINT NOT NULL,
+--    class_id BIGINT NOT NULL,
+--    attendance_date DATE NOT NULL,
+--    status attendance_status_enum NOT NULL,
+--    remarks TEXT,
+--    recorded_by_teacher_id BIGINT,
+--    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+--    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+--    CONSTRAINT fk_attendance_student FOREIGN KEY (student_id) REFERENCES student_profiles(id),
+--    CONSTRAINT fk_attendance_class FOREIGN KEY (class_id) REFERENCES classes(id),
+--    CONSTRAINT fk_attendance_teacher FOREIGN KEY (recorded_by_teacher_id) REFERENCES teachers(id),
+--    CONSTRAINT uk_attendance_unique UNIQUE (student_id, attendance_date)
+--);
+--
+---- 11. MARKS TABLE
+--CREATE TABLE marks (
+--    id BIGSERIAL PRIMARY KEY,
+--    student_id BIGINT NOT NULL,
+--    subject_assignment_id BIGINT NOT NULL,
+--    assessment_name VARCHAR(255) NOT NULL,
+--    marks_obtained DECIMAL(5,2) NOT NULL,
+--    total_marks DECIMAL(5,2) NOT NULL,
+--    grade VARCHAR(10),
+--    exam_date DATE,
+--    comments TEXT,
+--    recorded_by_teacher_id BIGINT,
+--    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+--    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+--    CONSTRAINT fk_marks_student FOREIGN KEY (student_id) REFERENCES student_profiles(id),
+--    CONSTRAINT fk_marks_subject_assignment FOREIGN KEY (subject_assignment_id) REFERENCES subject_assignments(id),
+--    CONSTRAINT fk_marks_teacher FOREIGN KEY (recorded_by_teacher_id) REFERENCES teachers(id)
+--);
+--
+---- 12. FEEDBACK TABLE
+--CREATE TABLE feedback (
+--    id BIGSERIAL PRIMARY KEY,
+--    student_id BIGINT NOT NULL,
+--    subject_assignment_id BIGINT NOT NULL,
+--    feedback_text TEXT NOT NULL,
+--    submission_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+--    is_read BOOLEAN NOT NULL DEFAULT FALSE,
+--    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+--    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+--    CONSTRAINT fk_feedback_student FOREIGN KEY (student_id) REFERENCES student_profiles(id),
+--    CONSTRAINT fk_feedback_subject_assignment FOREIGN KEY (subject_assignment_id) REFERENCES subject_assignments(id)
+--);
+--
+---- Add foreign key constraint for users.school_id after schools table is created
+--ALTER TABLE users ADD CONSTRAINT fk_users_school FOREIGN KEY (school_id) REFERENCES schools(id);
+--
+---- Create indexes for better performance
+--CREATE INDEX idx_users_email ON users(email);
+--CREATE INDEX idx_users_role ON users(role);
+--CREATE INDEX idx_users_school_id ON users(school_id);
+--CREATE INDEX idx_classes_school_id ON classes(school_id);
+--CREATE INDEX idx_student_profiles_class_id ON student_profiles(class_id);
+--CREATE INDEX idx_subject_assignments_class_id ON subject_assignments(class_id);
+--CREATE INDEX idx_subject_assignments_teacher_id ON subject_assignments(teacher_id);
+--CREATE INDEX idx_tasks_student_id ON tasks(student_id);
+--CREATE INDEX idx_tasks_teacher_id ON tasks(teacher_id);
+--CREATE INDEX idx_tasks_class_id ON tasks(class_id);
+--CREATE INDEX idx_attendance_student_id ON attendance(student_id);
+--CREATE INDEX idx_attendance_class_id ON attendance(class_id);
+--CREATE INDEX idx_attendance_date ON attendance(attendance_date);
+--CREATE INDEX idx_marks_student_id ON marks(student_id);
+--CREATE INDEX idx_marks_subject_assignment_id ON marks(subject_assignment_id);
+--CREATE INDEX idx_feedback_student_id ON feedback(student_id);
+--CREATE INDEX idx_feedback_subject_assignment_id ON feedback(subject_assignment_id);
+--
+---- Create trigger function for updating updated_at timestamp
+--CREATE OR REPLACE FUNCTION update_updated_at_column()
+--RETURNS TRIGGER AS $$
+--BEGIN
+--    NEW.updated_at = CURRENT_TIMESTAMP;
+--    RETURN NEW;
+--END;
+--$$ language 'plpgsql';
+--
+---- Create triggers for all tables with updated_at column
+--CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+--CREATE TRIGGER update_schools_updated_at BEFORE UPDATE ON schools FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+--CREATE TRIGGER update_classes_updated_at BEFORE UPDATE ON classes FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+--CREATE TRIGGER update_subjects_updated_at BEFORE UPDATE ON subjects FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+--CREATE TRIGGER update_teachers_updated_at BEFORE UPDATE ON teachers FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+--CREATE TRIGGER update_student_profiles_updated_at BEFORE UPDATE ON student_profiles FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+--CREATE TRIGGER update_subject_assignments_updated_at BEFORE UPDATE ON subject_assignments FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+--CREATE TRIGGER update_tasks_updated_at BEFORE UPDATE ON tasks FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+--CREATE TRIGGER update_attendance_updated_at BEFORE UPDATE ON attendance FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+--CREATE TRIGGER update_marks_updated_at BEFORE UPDATE ON marks FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+--CREATE TRIGGER update_feedback_updated_at BEFORE UPDATE ON feedback FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();

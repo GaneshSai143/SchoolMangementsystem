@@ -209,8 +209,7 @@ public class UserServiceImpl implements UserService {
         if (currentUser.getRole() == UserRole.SUPER_ADMIN) {
             users = userRepository.findAllByRole(role);
         } else if (currentUser.getRole() == UserRole.ADMIN) {
-            if (role == UserRole.PRINCIPAL) {
-                // Admins are not allowed to list all principals.
+            if (role == UserRole.ADMIN) {
                 throw new AccessDeniedException("Admins are not allowed to list all principals.");
             }
             // Admins can only list users within their own school

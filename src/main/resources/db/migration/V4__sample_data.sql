@@ -1,0 +1,223 @@
+---- Sample Data for School Management System
+---- This script populates all tables with realistic sample data
+--
+---- 1. INSERT USERS (Start with users as they are referenced by other tables)
+--INSERT INTO users (email, password, first_name, last_name, role, phone_number, enabled, auth_provider, preferred_theme) VALUES
+---- Super Admin
+--('superadmin@schoolsystem.com', '$2a$10$encrypted_password_hash', 'Super', 'Admin', 'SUPER_ADMIN', '+1234567890', true, 'LOCAL', 'light'),
+--
+---- School Principals (ADMIN role)
+--('principal.smith@springfield.edu', '$2a$10$encrypted_password_hash', 'John', 'Smith', 'ADMIN', '+1234567891', true, 'LOCAL', 'light'),
+--('principal.jones@oakridge.edu', '$2a$10$encrypted_password_hash', 'Sarah', 'Jones', 'ADMIN', '+1234567892', true, 'LOCAL', 'dark'),
+--
+---- Teachers
+--('teacher.brown@springfield.edu', '$2a$10$encrypted_password_hash', 'Michael', 'Brown', 'TEACHER', '+1234567893', true, 'LOCAL', 'light'),
+--('teacher.davis@springfield.edu', '$2a$10$encrypted_password_hash', 'Emily', 'Davis', 'TEACHER', '+1234567894', true, 'LOCAL', 'light'),
+--('teacher.wilson@springfield.edu', '$2a$10$encrypted_password_hash', 'David', 'Wilson', 'TEACHER', '+1234567895', true, 'LOCAL', 'dark'),
+--('teacher.martinez@springfield.edu', '$2a$10$encrypted_password_hash', 'Lisa', 'Martinez', 'TEACHER', '+1234567896', true, 'LOCAL', 'light'),
+--('teacher.anderson@springfield.edu', '$2a$10$encrypted_password_hash', 'Robert', 'Anderson', 'TEACHER', '+1234567897', true, 'LOCAL', 'light'),
+--
+---- Students
+--('student.johnson@springfield.edu', '$2a$10$encrypted_password_hash', 'Alex', 'Johnson', 'STUDENT', '+1234567898', true, 'LOCAL', 'light'),
+--('student.williams@springfield.edu', '$2a$10$encrypted_password_hash', 'Emma', 'Williams', 'STUDENT', '+1234567899', true, 'LOCAL', 'dark'),
+--('student.garcia@springfield.edu', '$2a$10$encrypted_password_hash', 'Carlos', 'Garcia', 'STUDENT', '+1234567900', true, 'LOCAL', 'light'),
+--('student.rodriguez@springfield.edu', '$2a$10$encrypted_password_hash', 'Maria', 'Rodriguez', 'STUDENT', '+1234567901', true, 'LOCAL', 'light'),
+--('student.miller@springfield.edu', '$2a$10$encrypted_password_hash', 'James', 'Miller', 'STUDENT', '+1234567902', true, 'LOCAL', 'dark'),
+--('student.taylor@springfield.edu', '$2a$10$encrypted_password_hash', 'Sophia', 'Taylor', 'STUDENT', '+1234567903', true, 'LOCAL', 'light'),
+--('student.lee@springfield.edu', '$2a$10$encrypted_password_hash', 'Daniel', 'Lee', 'STUDENT', '+1234567904', true, 'LOCAL', 'light'),
+--('student.white@springfield.edu', '$2a$10$encrypted_password_hash', 'Olivia', 'White', 'STUDENT', '+1234567905', true, 'LOCAL', 'dark'),
+--
+---- Parents
+--('parent.johnson@email.com', '$2a$10$encrypted_password_hash', 'Jennifer', 'Johnson', 'PARENT', '+1234567906', true, 'LOCAL', 'light'),
+--('parent.williams@email.com', '$2a$10$encrypted_password_hash', 'Thomas', 'Williams', 'PARENT', '+1234567907', true, 'LOCAL', 'light'),
+--('parent.garcia@email.com', '$2a$10$encrypted_password_hash', 'Ana', 'Garcia', 'PARENT', '+1234567908', true, 'LOCAL', 'dark');
+--
+---- 2. INSERT SCHOOLS
+--INSERT INTO schools (name, location, principal_id) VALUES
+--('Springfield High School', '123 Education St, Springfield, IL', 2),
+--('Oakridge Academy', '456 Learning Ave, Oakridge, CA', 3);
+--
+---- 3. UPDATE USERS with school_id
+--UPDATE users SET school_id = 1 WHERE id IN (2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20);
+--UPDATE users SET school_id = 2 WHERE id = 3;
+--
+---- 4. INSERT SUBJECTS
+--INSERT INTO subjects (name, subject_code) VALUES
+--('Mathematics', 'MATH101'),
+--('English Literature', 'ENG101'),
+--('Physics', 'PHY101'),
+--('Chemistry', 'CHEM101'),
+--('Biology', 'BIO101'),
+--('History', 'HIST101'),
+--('Geography', 'GEO101'),
+--('Computer Science', 'CS101'),
+--('Art', 'ART101'),
+--('Physical Education', 'PE101');
+--
+---- 5. INSERT CLASSES
+--INSERT INTO classes (name, school_id, class_teacher_id) VALUES
+--('Grade 10A', 1, 4),  -- Mr. Brown is class teacher
+--('Grade 10B', 1, 5),  -- Ms. Davis is class teacher
+--('Grade 11A', 1, 6),  -- Mr. Wilson is class teacher
+--('Grade 11B', 1, 7),  -- Ms. Martinez is class teacher
+--('Grade 12A', 1, 8);  -- Mr. Anderson is class teacher
+--
+---- 6. INSERT TEACHERS (Teacher profiles)
+--INSERT INTO teachers (user_id) VALUES
+--(4), -- Michael Brown
+--(5), -- Emily Davis
+--(6), -- David Wilson
+--(7), -- Lisa Martinez
+--(8); -- Robert Anderson
+--
+---- 7. INSERT TEACHER SUBJECTS (ElementCollection)
+--INSERT INTO teacher_subjects (teacher_id, subject) VALUES
+--(1, 'Mathematics'),
+--(1, 'Physics'),
+--(2, 'English Literature'),
+--(2, 'History'),
+--(3, 'Chemistry'),
+--(3, 'Biology'),
+--(4, 'Geography'),
+--(4, 'Computer Science'),
+--(5, 'Art'),
+--(5, 'Physical Education');
+--
+---- 8. INSERT STUDENT PROFILES
+--INSERT INTO student_profiles (user_id, class_id) VALUES
+--(9, 1),   -- Alex Johnson - Grade 10A
+--(10, 1),  -- Emma Williams - Grade 10A
+--(11, 2),  -- Carlos Garcia - Grade 10B
+--(12, 2),  -- Maria Rodriguez - Grade 10B
+--(13, 3),  -- James Miller - Grade 11A
+--(14, 3),  -- Sophia Taylor - Grade 11A
+--(15, 4),  -- Daniel Lee - Grade 11B
+--(16, 4);  -- Olivia White - Grade 11B
+--
+---- 9. INSERT SUBJECT ASSIGNMENTS
+--INSERT INTO subject_assignments (class_id, subject_id, teacher_id, academic_year, term, status) VALUES
+---- Grade 10A Assignments
+--(1, 1, 1, '2024-2025', 'Fall', 'ACTIVE'),  -- Math - Mr. Brown
+--(1, 2, 2, '2024-2025', 'Fall', 'ACTIVE'),  -- English - Ms. Davis
+--(1, 3, 1, '2024-2025', 'Fall', 'ACTIVE'),  -- Physics - Mr. Brown
+--(1, 6, 2, '2024-2025', 'Fall', 'ACTIVE'),  -- History - Ms. Davis
+--
+---- Grade 10B Assignments
+--(2, 1, 1, '2024-2025', 'Fall', 'ACTIVE'),  -- Math - Mr. Brown
+--(2, 2, 2, '2024-2025', 'Fall', 'ACTIVE'),  -- English - Ms. Davis
+--(2, 4, 3, '2024-2025', 'Fall', 'ACTIVE'),  -- Chemistry - Mr. Wilson
+--(2, 5, 3, '2024-2025', 'Fall', 'ACTIVE'),  -- Biology - Mr. Wilson
+--
+---- Grade 11A Assignments
+--(3, 1, 1, '2024-2025', 'Fall', 'ACTIVE'),  -- Math - Mr. Brown
+--(3, 3, 1, '2024-2025', 'Fall', 'ACTIVE'),  -- Physics - Mr. Brown
+--(3, 4, 3, '2024-2025', 'Fall', 'ACTIVE'),  -- Chemistry - Mr. Wilson
+--(3, 7, 4, '2024-2025', 'Fall', 'ACTIVE'),  -- Geography - Ms. Martinez
+--
+---- Grade 11B Assignments
+--(4, 1, 1, '2024-2025', 'Fall', 'ACTIVE'),  -- Math - Mr. Brown
+--(4, 2, 2, '2024-2025', 'Fall', 'ACTIVE'),  -- English - Ms. Davis
+--(4, 8, 4, '2024-2025', 'Fall', 'ACTIVE'),  -- Computer Science - Ms. Martinez
+--(4, 9, 5, '2024-2025', 'Fall', 'ACTIVE');  -- Art - Mr. Anderson
+--
+---- 10. INSERT TASKS
+--INSERT INTO tasks (title, description, due_date, status, priority, student_id, teacher_id, class_id, subject_assignment_id, task_type) VALUES
+---- Homework Tasks
+--('Algebra Assignment #1', 'Complete problems 1-20 in Chapter 3', '2024-10-15 23:59:00', 'PENDING', 'MEDIUM', 1, 1, 1, 1, 'HOMEWORK'),
+--('Essay on Shakespeare', 'Write a 1000-word essay on Hamlet', '2024-10-20 23:59:00', 'IN_PROGRESS', 'HIGH', 1, 2, 1, 2, 'HOMEWORK'),
+--('Physics Lab Report', 'Complete lab report for pendulum experiment', '2024-10-18 23:59:00', 'COMPLETED', 'MEDIUM', 2, 1, 1, 3, 'PROJECT'),
+--('Chemistry Quiz Preparation', 'Study chapters 5-7 for upcoming quiz', '2024-10-22 23:59:00', 'PENDING', 'LOW', 3, 3, 2, 7, 'QUIZ'),
+--
+---- Exam Tasks
+--('Midterm Mathematics Exam', 'Comprehensive exam covering chapters 1-5', '2024-10-25 14:00:00', 'PENDING', 'HIGH', 1, 1, 1, 1, 'EXAM'),
+--('English Literature Final', 'Final exam on all studied works', '2024-11-05 14:00:00', 'PENDING', 'HIGH', 2, 2, 1, 2, 'EXAM'),
+--
+---- Project Tasks
+--('Science Fair Project', 'Design and conduct a scientific experiment', '2024-11-15 23:59:00', 'IN_PROGRESS', 'HIGH', 4, 3, 2, 8, 'PROJECT'),
+--('History Research Paper', 'Research paper on World War II', '2024-11-10 23:59:00', 'PENDING', 'MEDIUM', 5, 2, 3, 12, 'PROJECT'),
+--
+---- Other Tasks
+--('Class Presentation', 'Prepare presentation on assigned topic', '2024-10-30 14:00:00', 'PENDING', 'MEDIUM', 6, 4, 3, 15, 'OTHER');
+--
+---- 11. INSERT ATTENDANCE RECORDS
+--INSERT INTO attendance (student_id, class_id, attendance_date, status, remarks, recorded_by_teacher_id) VALUES
+---- Grade 10A Attendance (October 2024)
+--(1, 1, '2024-10-01', 'PRESENT', NULL, 1),
+--(2, 1, '2024-10-01', 'PRESENT', NULL, 1),
+--(1, 1, '2024-10-02', 'PRESENT', NULL, 1),
+--(2, 1, '2024-10-02', 'LATE', 'Arrived 15 minutes late', 1),
+--(1, 1, '2024-10-03', 'ABSENT', 'Called in sick', 1),
+--(2, 1, '2024-10-03', 'PRESENT', NULL, 1),
+--(1, 1, '2024-10-04', 'PRESENT', NULL, 1),
+--(2, 1, '2024-10-04', 'PRESENT', NULL, 1),
+--
+---- Grade 10B Attendance
+--(3, 2, '2024-10-01', 'PRESENT', NULL, 2),
+--(4, 2, '2024-10-01', 'EXCUSED_ABSENCE', 'Family emergency', 2),
+--(3, 2, '2024-10-02', 'PRESENT', NULL, 2),
+--(4, 2, '2024-10-02', 'PRESENT', NULL, 2),
+--
+---- Grade 11A Attendance
+--(5, 3, '2024-10-01', 'PRESENT', NULL, 3),
+--(6, 3, '2024-10-01', 'LATE', 'Traffic delay', 3),
+--(5, 3, '2024-10-02', 'PRESENT', NULL, 3),
+--(6, 3, '2024-10-02', 'PRESENT', NULL, 3);
+--
+---- 12. INSERT MARKS
+--INSERT INTO marks (student_id, subject_assignment_id, assessment_name, marks_obtained, total_marks, grade, exam_date, comments, recorded_by_teacher_id) VALUES
+---- Mathematics Marks
+--(1, 1, 'Algebra Quiz 1', 85.50, 100.00, 'B+', '2024-09-15', 'Good work, needs improvement in quadratic equations', 1),
+--(2, 1, 'Algebra Quiz 1', 92.00, 100.00, 'A-', '2024-09-15', 'Excellent work!', 1),
+--(1, 1, 'Midterm Exam', 78.00, 100.00, 'C+', '2024-09-30', 'Struggled with complex problems', 1),
+--(2, 1, 'Midterm Exam', 88.50, 100.00, 'B+', '2024-09-30', 'Good understanding of concepts', 1),
+--
+---- English Literature Marks
+--(1, 2, 'Essay Assignment', 90.00, 100.00, 'A-', '2024-09-20', 'Well-written essay with good analysis', 2),
+--(2, 2, 'Essay Assignment', 87.00, 100.00, 'B+', '2024-09-20', 'Good content, needs better structure', 2),
+--(1, 2, 'Shakespeare Quiz', 82.00, 100.00, 'B-', '2024-09-25', 'Good understanding of themes', 2),
+--(2, 2, 'Shakespeare Quiz', 95.00, 100.00, 'A', '2024-09-25', 'Outstanding performance!', 2),
+--
+---- Physics Marks
+--(1, 3, 'Lab Report 1', 88.00, 100.00, 'B+', '2024-09-18', 'Excellent lab work and analysis', 1),
+--(2, 3, 'Lab Report 1', 91.00, 100.00, 'A-', '2024-09-18', 'Very thorough work', 1),
+--
+---- Chemistry Marks (Grade 10B)
+--(3, 7, 'Chemistry Quiz 1', 76.00, 100.00, 'C+', '2024-09-22', 'Needs more practice with formulas', 3),
+--(4, 7, 'Chemistry Quiz 1', 89.00, 100.00, 'B+', '2024-09-22', 'Good understanding of concepts', 3),
+--
+---- Biology Marks
+--(3, 8, 'Biology Lab Report', 94.00, 100.00, 'A', '2024-09-28', 'Excellent scientific method application', 3),
+--(4, 8, 'Biology Lab Report', 86.00, 100.00, 'B+', '2024-09-28', 'Good work, needs better conclusions', 3);
+--
+---- 13. INSERT FEEDBACK
+--INSERT INTO feedback (student_id, subject_assignment_id, feedback_text, submission_date, is_read) VALUES
+---- Mathematics Feedback
+--(1, 1, 'Alex, you have shown good progress in algebra. Focus on practicing quadratic equations more. Your problem-solving approach is excellent!', '2024-09-16 10:30:00', false),
+--(2, 1, 'Emma, outstanding work in mathematics! Your analytical skills are impressive. Keep up the excellent work!', '2024-09-16 10:35:00', true),
+--
+---- English Literature Feedback
+--(1, 2, 'Alex, your essay demonstrated good understanding of the text. Try to include more textual evidence in your next assignment.', '2024-09-21 14:20:00', true),
+--(2, 2, 'Emma, your writing skills are developing well. Your analysis of Shakespeare''s themes was insightful.', '2024-09-21 14:25:00', false),
+--
+---- Physics Feedback
+--(1, 3, 'Alex, excellent lab work! Your experimental procedure was well-documented. Consider exploring more advanced topics.', '2024-09-19 16:45:00', true),
+--(2, 3, 'Emma, great job on the lab report! Your data analysis was thorough and accurate.', '2024-09-19 16:50:00', true),
+--
+---- Chemistry Feedback
+--(3, 7, 'Carlos, you need to practice chemical formulas more. Consider using flashcards for memorization.', '2024-09-23 11:15:00', false),
+--(4, 7, 'Maria, excellent work in chemistry! Your understanding of chemical reactions is impressive.', '2024-09-23 11:20:00', true),
+--
+---- Biology Feedback
+--(3, 8, 'Carlos, outstanding lab work! Your scientific method application was exemplary.', '2024-09-29 13:30:00', true),
+--(4, 8, 'Maria, good work on the lab report. Try to strengthen your conclusions with more detailed analysis.', '2024-09-29 13:35:00', false);
+--
+---- 14. UPDATE CLASS TEACHERS (Set class teachers for classes)
+--UPDATE classes SET class_teacher_id = 4 WHERE id = 1; -- Grade 10A - Mr. Brown
+--UPDATE classes SET class_teacher_id = 5 WHERE id = 2; -- Grade 10B - Ms. Davis
+--UPDATE classes SET class_teacher_id = 6 WHERE id = 3; -- Grade 11A - Mr. Wilson
+--UPDATE classes SET class_teacher_id = 7 WHERE id = 4; -- Grade 11B - Ms. Martinez
+--UPDATE classes SET class_teacher_id = 8 WHERE id = 5; -- Grade 12A - Mr. Anderson
+--
+---- 15. UPDATE SCHOOL PRINCIPALS
+--UPDATE schools SET principal_id = 2 WHERE id = 1; -- Springfield High School - John Smith
+--UPDATE schools SET principal_id = 3 WHERE id = 2; -- Oakridge Academy - Sarah Jones 

@@ -87,7 +87,7 @@ class UserServiceImplTest {
         mockCurrentUser(adminUser);
 
         assertThrows(AccessDeniedException.class, () -> {
-            userService.getUsersByRole(UserRole.PRINCIPAL);
+            userService.getUsersByRole(UserRole.ADMIN);
         });
     }
 

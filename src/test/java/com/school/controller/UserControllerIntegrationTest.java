@@ -78,7 +78,7 @@ class UserControllerIntegrationTest {
     @Test
     @WithMockUser(username = "admin@test.com", roles = {"ADMIN"})
     void getUsersByRole_Admin_AccessingPrincipals_shouldReturnForbidden() throws Exception {
-        when(userService.getUsersByRole(UserRole.PRINCIPAL))
+        when(userService.getUsersByRole(UserRole.ADMIN))
                 .thenThrow(new org.springframework.security.access.AccessDeniedException("Admins are not allowed to list all principals."));
 
         mockMvc.perform(get("/users/by-role")
